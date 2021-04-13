@@ -10,4 +10,6 @@ public interface UserDao {
     List<User> lazyFindAll();
 
     List<User> findUserByDepartmentId(String departmentId);
+
+    int cleanCathe();
 }

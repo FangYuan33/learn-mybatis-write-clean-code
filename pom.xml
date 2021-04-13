@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>mybatis-02-configuration</module>
+        <module>mybatis-03-mapper</module>
     </modules>
 
     <dependencies>

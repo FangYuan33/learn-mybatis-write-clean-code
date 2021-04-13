@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.DepartmentDao">
+    <cache/>
+    <resultMap id="lazyDepartmentMap" type="entity.Department">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="tel" column="tel"/>
+        <collection property="users" ofType="entity.User"
+                    select="dao.UserDao.findUserByDepartmentId" column="id"/>
+    </resultMap>
+
+    <select id="findAll" resultType="entity.Department">
+        select * from tbl_department;
+    </select>
+
+    <select id="findById" resultMap="lazyDepartmentMap">
+        select * from tbl_department
+        where id = #{id};
+    </select>
+
+    <insert id="insert" parameterType="entity.Department">
+        insert into tbl_department (id, name, tel) values (#{id}, #{name}, #{tel});
+    </insert>
+
+    <update id="update" parameterType="entity.Department">
+        update tbl_department set name = {name}, tel = {tel}
+        where id = {id};
+    </update>
+
+    <delete id="deleteById" parameterType="string">
+        delete from tbl_department
+        where id = #{id};
+    </delete>
+</mapper>
