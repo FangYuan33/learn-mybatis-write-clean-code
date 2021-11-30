@@ -1,4 +1,5 @@
 import dao.DepartmentMapper;
+import dao.UserMapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -11,8 +12,13 @@ public class MybatisApplication {
     public static void main(String[] args) throws IOException {
         SqlSession sqlSession = getSqlSession();
 
+        // 1. 查询部门信息
         DepartmentMapper departmentMapper = sqlSession.getMapper(DepartmentMapper.class);
         departmentMapper.findAll().forEach(System.out::println);
+
+        // 2. 查询用户信息
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        userMapper.findAll().forEach(System.out::println);
 
         sqlSession.close();
     }

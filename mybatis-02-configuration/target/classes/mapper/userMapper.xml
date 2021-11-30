@@ -19,7 +19,7 @@
         <result property="age" column="age"/>
         <result property="birthday" column="birthday"/>
         <association property="department" javaType="entity.Department"
-                     select="dao.DepartmentMapper.findById" column="department_id"/>
+            select="dao.DepartmentDao.findById" column="department_id"/>
     </resultMap>
 
     <select id="findAll" resultMap="userMap">
