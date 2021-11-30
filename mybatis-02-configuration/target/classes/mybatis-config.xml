@@ -14,15 +14,15 @@
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.jdbc.Driver"/>
-                <property name="url" value="jdbc:mysql://rm-2zerhb0v92201333t1o.mysql.rds.aliyuncs.com:3306/mybatis?characterEncoding=utf-8"/>
-                <property name="username" value="study"/>
+                <property name="url" value="jdbc:mysql://127.0.0.1:3306/learn_mybatis?characterEncoding=utf-8"/>
+                <property name="username" value="root"/>
                 <property name="password" value="Yilong981223"/>
             </dataSource>
         </environment>
     </environments>
 
     <mappers>
-        <mapper resource="mapper/departmentMapper.xml"/>
-        <mapper resource="mapper/userMapper.xml"/>
+        <mapper resource="mapper/DepartmentMapper.xml"/>
+        <mapper resource="mapper/UserMapper.xml"/>
     </mappers>
 </configuration>

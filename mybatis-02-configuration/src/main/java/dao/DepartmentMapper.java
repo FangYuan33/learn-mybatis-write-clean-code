@@ -4,7 +4,7 @@ import entity.Department;
 
 import java.util.List;
 
-public interface DepartmentDao {
+public interface DepartmentMapper {
     List<Department> findAll();
 
     Department findById(String id);

@@ -5,7 +5,7 @@
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://rm-2zerhb0v92201333t1o.mysql.rds.aliyuncs.com:3306/mybatis</jdbc-url>
+      <jdbc-url>jdbc:mysql://127.0.0.1:3306/learn_mybatis</jdbc-url>
     </data-source>
   </component>
 </project>
