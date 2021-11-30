@@ -1,6 +1,7 @@
 package entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
@@ -11,7 +12,13 @@ import java.util.Set;
  * @date 2021/11/30
  */
 @Data
+@NoArgsConstructor
 public class Department {
+
+    public Department(String id) {
+        this.id = id;
+    }
+
     private String id;
 
     /**

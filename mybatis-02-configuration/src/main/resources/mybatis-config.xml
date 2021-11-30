@@ -3,20 +3,35 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+
+<!--    配置的属性，用${name}取值-->
+    <properties resource="jdbc.properties" />
+
     <settings>
         <setting name="logImpl" value="LOG4J"/>
     </settings>
 
+<!--    别名-->
+    <typeAliases>
+        <typeAlias type="entity.Department" alias="Department"/>
+        <typeAlias type="entity.User" alias="User"/>
+        <package name="entity"/>
+    </typeAliases>
+
+    <typeHandlers>
+        <typeHandler handler="typeHandler.DepartmentTypeHandler" javaType="entity.Department" jdbcType="VARCHAR"/>
+    </typeHandlers>
+    
     <objectFactory type="ExtendObjectFactory"/>
 
     <environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
-                <property name="driver" value="com.mysql.jdbc.Driver"/>
-                <property name="url" value="jdbc:mysql://127.0.0.1:3306/learn_mybatis?characterEncoding=utf-8"/>
-                <property name="username" value="root"/>
-                <property name="password" value="Yilong981223"/>
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
             </dataSource>
         </environment>
     </environments>
@@ -24,5 +39,6 @@
     <mappers>
         <mapper resource="mapper/DepartmentMapper.xml"/>
         <mapper resource="mapper/UserMapper.xml"/>
+        <package name="mapper"/>
     </mappers>
 </configuration>

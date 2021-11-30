@@ -20,8 +20,20 @@
         <result property="age" column="age"/>
         <result property="birthday" column="birthday"/>
         <association property="department" javaType="entity.Department"
-            select="dao.DepartmentDao.findById" column="department_id"/>
+            select="dao.DepartmentMapper.findById" column="department_id"/>
     </resultMap>
+
+    <resultMap id="useTypeHandler" type="User">
+        <association property="department" javaType="Department"
+                     typeHandler="typeHandler.DepartmentTypeHandler" column="department_id"/>
+    </resultMap>
+
+    <sql id="baseColumn">
+        user.id,
+        user.name,
+        user.age,
+        user.birthday
+    </sql>
 
     <select id="findAll" resultMap="userMap">
         select u.*, td.id, td.name as department_name
@@ -41,4 +53,13 @@
     <select id="cleanCathe" resultType="int" flushCache="true">
         select count(user.id) from user;
     </select>
+
+    <select id="findAllUseTypeHandler" resultMap="useTypeHandler">
+        select <include refid="baseColumn"></include>
+        from user
+    </select>
+
+    <insert id="saveUser" parameterType="User">
+        insert into user(id, name, department_id) values (#{id}, #{name}, #{department});
+    </insert>
 </mapper>

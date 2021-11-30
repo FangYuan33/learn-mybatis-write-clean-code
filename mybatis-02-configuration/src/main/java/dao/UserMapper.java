@@ -12,4 +12,11 @@ public interface UserMapper {
     List<User> findUserByDepartmentId(String departmentId);
 
     int cleanCathe();
+
+    /**
+     * 使用DepartmentTypeHandler使Departments字段有值
+     */
+    List<User> findAllUseTypeHandler();
+
+    void saveUser(User user);
 }
