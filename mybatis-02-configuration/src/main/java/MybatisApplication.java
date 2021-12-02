@@ -18,10 +18,11 @@ public class MybatisApplication {
         // 1. 查询部门信息
         DepartmentMapper departmentMapper = sqlSession.getMapper(DepartmentMapper.class);
 //        departmentMapper.findAll().forEach(System.out::println);
+        System.out.println(departmentMapper.findById("18ec781fbefd727923b0d35740b177ab"));
 
         // 2. 查询用户信息 多对一
-        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
-        userMapper.findAll().forEach(System.out::println);
+//        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+//        userMapper.findAll().forEach(System.out::println);
 
         // 3. 延迟加载 在resultMap在此调用其他SQL
 //        userMapper.lazyFindAll().forEach(System.out::println);
@@ -40,7 +41,7 @@ public class MybatisApplication {
     /**
      * 获取SqlSession
      */
-    private static SqlSession getSqlSession() throws IOException {
+    public static SqlSession getSqlSession() throws IOException {
         InputStream xml = Resources.getResourceAsStream("mybatis-config.xml");
         SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
         SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(xml);

@@ -3,6 +3,7 @@ package entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -14,6 +15,8 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 public class Department {
+
+//    private static final long serialVersionUID = 1L;
 
     public Department(String id) {
         this.id = id;

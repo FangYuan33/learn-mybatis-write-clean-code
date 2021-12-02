@@ -23,6 +23,23 @@
             select="dao.DepartmentMapper.findById" column="department_id"/>
     </resultMap>
 
+<!--    测试带constructor标签的resultMap 注意name属性要在构造器中标记@Param注解-->
+    <resultMap id="constructorUserMap" type="entity.User">
+        <constructor>
+            <idArg column="id" javaType="String" name="id"/>
+            <arg column="name" javaType="String" name="name"/>
+            <arg column="age" javaType="Integer" name="age"/>
+        </constructor>
+        <result property="birthday" column="birthday"/>
+    </resultMap>
+
+<!--    测试extends，这个就避免了我们重复写user中已有的字段，继承直接拿过来即可，另外resultMap引用的是别的Mapper中的resultMap-->
+<!--    columnPrefix="department_" 是指定列的前缀，这样能保证能将列的值封装到resultMap中，知道就好-->
+    <resultMap id="userWithExtends" type="User" extends="constructorUserMap">
+        <association property="department" javaType="Department"
+                     resultMap="dao.DepartmentMapper.lazyDepartmentMap"/>
+    </resultMap>
+
     <resultMap id="useTypeHandler" type="User">
         <association property="department" javaType="Department"
                      typeHandler="typeHandler.DepartmentTypeHandler" column="department_id"/>
@@ -42,14 +59,25 @@
         on u.department_id = td.id
     </select>
 
+    <select id="findAllWithConstructorResultMap" resultMap="constructorUserMap">
+        select *
+        from user
+    </select>
+
+    <select id="findAllWithExtendsResultMap" resultMap="userWithExtends">
+        select * from user
+    </select>
+
     <select id="lazyFindAll" resultMap="lazyUserMap">
         select * from user;
     </select>
 
-    <select id="findUserByDepartmentId" resultType="entity.User">
+<!--    若返回的是集合，那么resultType应该是集合包含的类型-->
+    <select id="findUserByDepartmentId" resultType="User" parameterType="String">
         select * from user where department_id = #{departmentId};
     </select>
 
+    <!--    flushCache 所有namespace 的一级缓存 和 当前namespace 的二级缓存均会清除 默认是false-->
     <select id="cleanCathe" resultType="int" flushCache="true">
         select count(user.id) from user;
     </select>
@@ -62,4 +90,6 @@
     <insert id="saveUser" parameterType="User">
         insert into user(id, name, department_id) values (#{id}, #{name}, #{department});
     </insert>
+
+    <cache readOnly="true"/>
 </mapper>

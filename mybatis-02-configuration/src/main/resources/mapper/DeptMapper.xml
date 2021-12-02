@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.DeptMapper">
+
+<!--    MyBatis 会使用 jdbc 底层的 getGeneratedKeys 方法，取出自增主键的值-->
+<!--    配合 useGeneratedKeys 使用，需要指定传入参数对象的属性名，MyBatis 会使用 getGeneratedKeys 的返回值，或 insert 语句中的 selectKey 子元素，填充至指定属性中-->
+<!--    设置 useGeneratedKeys 生效的值对应到数据库表中的列名，在某些数据库（像 PostgreSQL）中，当主键列不是数据库表的第一列时，需要显式配置该属性-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into dept (name, tel) values(#{name}, #{tel});
+    </insert>
+</mapper>
