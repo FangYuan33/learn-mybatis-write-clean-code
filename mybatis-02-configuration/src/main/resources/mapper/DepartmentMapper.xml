@@ -39,7 +39,9 @@
         select count(department.id) from department;
     </select>
 
-<!--    需要进行cache标签标记，否则不会触发二级缓存-->
+<!--    需要进行cache标签标记，否则不会触发二级缓存，全局二级缓存默认开启，单个namespace下需要标记cache标签才能开启二级缓存-->
 <!--    不标记只读的话，对应的实体类要实现Serializable进行序列化，否则会报错-->
     <cache readOnly="true"/>
+<!--    这个标记会加入其他namespace下的二级缓存-->
+    <cache-ref namespace="dao.UserMapper"/>
 </mapper>

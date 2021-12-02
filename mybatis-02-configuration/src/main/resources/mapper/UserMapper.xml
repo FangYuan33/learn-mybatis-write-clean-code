@@ -45,6 +45,14 @@
                      typeHandler="typeHandler.DepartmentTypeHandler" column="department_id"/>
     </resultMap>
 
+<!--    测试Discriminator，根据条件值的不同，返回不同的resultMap 指定column和javaType即可，实体类中不必有这个字段-->
+    <resultMap id="userWithDiscriminator" type="User">
+        <discriminator javaType="int" column="deleted">
+            <case value="0" resultMap="lazyUserMap"/>
+            <case value="1" resultType="User"/>
+        </discriminator>
+    </resultMap>
+
     <sql id="baseColumn">
         user.id,
         user.name,
@@ -90,6 +98,10 @@
     <insert id="saveUser" parameterType="User">
         insert into user(id, name, department_id) values (#{id}, #{name}, #{department});
     </insert>
+
+    <select id="findAllWithDiscriminator" resultMap="userWithDiscriminator">
+        select * from user
+    </select>
 
     <cache readOnly="true"/>
 </mapper>

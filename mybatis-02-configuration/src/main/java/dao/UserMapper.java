@@ -29,4 +29,6 @@ public interface UserMapper {
     List<User> findAllUseTypeHandler();
 
     void saveUser(User user);
+
+    List<User> findAllWithDiscriminator();
 }

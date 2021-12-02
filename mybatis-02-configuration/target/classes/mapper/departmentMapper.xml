@@ -7,8 +7,8 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="tel" column="tel"/>
-        <collection property="users" ofType="entity.User"
-                    select="dao.UserDao.findUserByDepartmentId" column="id"/>
+        <collection property="users" ofType="User"
+                    select="dao.UserMapper.findUserByDepartmentId" column="id"/>
     </resultMap>
 
     <select id="findAll" resultType="entity.Department">
@@ -17,7 +17,7 @@
 
     <select id="findById" resultMap="lazyDepartmentMap">
         select * from department
-        where id = #{id};
+        where id = #{id}
     </select>
 
     <insert id="insert" parameterType="entity.Department">
@@ -33,4 +33,13 @@
         delete from department
         where id = #{id};
     </delete>
+
+    <!--    flushCache 所有namespace 的一级缓存 和 当前namespace 的二级缓存均会清除 默认是false-->
+    <select id="cleanCathe" resultType="int" flushCache="true">
+        select count(department.id) from department;
+    </select>
+
+<!--    需要进行cache标签标记，否则不会触发二级缓存-->
+<!--    不标记只读的话，对应的实体类要实现Serializable进行序列化，否则会报错-->
+    <cache readOnly="true"/>
 </mapper>

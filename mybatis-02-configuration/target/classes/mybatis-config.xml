@@ -3,20 +3,38 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+
+<!--    配置的属性，用${name}取值-->
+    <properties resource="jdbc.properties" />
+
     <settings>
         <setting name="logImpl" value="LOG4J"/>
+<!--        开启二级缓存，默认值就是开启状态-->
+        <setting name="cacheEnabled" value="true"/>
     </settings>
 
+<!--    别名-->
+    <typeAliases>
+        <typeAlias type="entity.Department" alias="Department"/>
+        <typeAlias type="entity.User" alias="User"/>
+<!--        指定这个后，它会扫描该目录下的所有子目录，之后会把目录中的类全都指定别名，也可根据Alias注解自行配置-->
+        <package name="entity"/>
+    </typeAliases>
+
+    <typeHandlers>
+        <typeHandler handler="typeHandler.DepartmentTypeHandler" javaType="entity.Department" jdbcType="VARCHAR"/>
+    </typeHandlers>
+    
     <objectFactory type="ExtendObjectFactory"/>
 
     <environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
-                <property name="driver" value="com.mysql.jdbc.Driver"/>
-                <property name="url" value="jdbc:mysql://127.0.0.1:3306/learn_mybatis?characterEncoding=utf-8"/>
-                <property name="username" value="root"/>
-                <property name="password" value="Yilong981223"/>
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
             </dataSource>
         </environment>
     </environments>
@@ -24,5 +42,7 @@
     <mappers>
         <mapper resource="mapper/DepartmentMapper.xml"/>
         <mapper resource="mapper/UserMapper.xml"/>
+        <mapper resource="mapper/DeptMapper.xml"/>
+<!--        <package name="dao"/>-->
     </mappers>
 </configuration>

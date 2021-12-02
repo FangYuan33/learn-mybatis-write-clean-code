@@ -21,6 +21,9 @@ public class TestResultMap {
 
         // 测试resultMap的 extends标签
         List<User> users1 = userMapper.findAllWithExtendsResultMap();
-        users1.forEach(System.out::println);
+//        users1.forEach(System.out::println);
+
+        // 测试Discriminator，根据条件值的不同，返回不同的resultMap
+        userMapper.findAllWithDiscriminator().forEach(System.out::println);
     }
 }
