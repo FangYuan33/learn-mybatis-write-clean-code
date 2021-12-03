@@ -45,7 +45,7 @@
                      typeHandler="typeHandler.DepartmentTypeHandler" column="department_id"/>
     </resultMap>
 
-<!--    测试Discriminator，根据条件值的不同，返回不同的resultMap 指定column即可，实体类中不必有这个字段-->
+<!--    测试Discriminator，根据条件值的不同，返回不同的resultMap 指定column和javaType即可，实体类中不必有这个字段-->
     <resultMap id="userWithDiscriminator" type="User">
         <discriminator javaType="int" column="deleted">
             <case value="0" resultMap="lazyUserMap"/>
@@ -101,6 +101,22 @@
 
     <select id="findAllWithDiscriminator" resultMap="userWithDiscriminator">
         select * from user
+    </select>
+
+<!--    我写了一个在where标签嵌套的choose when otherwise 条件-->
+    <select id="findOneByOneCondition" resultType="User" parameterType="User">
+        select * from user
+        <where>
+            user.deleted = 0
+            <choose>
+                <when test="name != null and name != ''">
+                    and user.name = #{name}
+                </when>
+                <otherwise>
+                    and user.id = #{id}
+                </otherwise>
+            </choose>
+        </where>
     </select>
 
     <cache readOnly="true"/>

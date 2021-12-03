@@ -103,5 +103,21 @@
         select * from user
     </select>
 
+<!--    我写了一个在where标签嵌套的choose when otherwise 条件-->
+    <select id="findOneByOneCondition" resultType="User" parameterType="User">
+        select * from user
+        <where>
+            user.deleted = 0
+            <choose>
+                <when test="name != null and name != ''">
+                    and user.name = #{name}
+                </when>
+                <otherwise>
+                    and user.id = #{id}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
     <cache readOnly="true"/>
 </mapper>

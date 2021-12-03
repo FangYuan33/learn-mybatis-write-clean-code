@@ -31,4 +31,9 @@ public interface UserMapper {
     void saveUser(User user);
 
     List<User> findAllWithDiscriminator();
+
+    /**
+     * 测试 choose when otherwise 标签
+     */
+    User findOneByOneCondition(User user);
 }
