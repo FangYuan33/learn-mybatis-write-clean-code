@@ -1,5 +1,6 @@
 import dao.DepartmentMapper;
 import dao.UserMapper;
+import entity.Department;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -22,14 +23,27 @@ public class TestMyBatistaCache {
         SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(xml);
 
         SqlSession sqlSession = sqlSessionFactory.openSession();
+        SqlSession sqlSession1 = sqlSessionFactory.openSession();
         DepartmentMapper departmentMapper = sqlSession.getMapper(DepartmentMapper.class);
+        DepartmentMapper departmentMapper1 = sqlSession1.getMapper(DepartmentMapper.class);
         System.out.println("----------department第一次查询 ↓------------");
-        departmentMapper.findById("18ec781fbefd727923b0d35740b177ab");
+        Department department = departmentMapper.findById("18ec781fbefd727923b0d35740b177ab");
+//        System.out.println(department);
+//        department.setName("方圆把名字改了");
+//        System.out.println("----------sqlSession1下department执行相同的SQL，控制台出现SQL ↓------------");
+//        departmentMapper1.findById("18ec781fbefd727923b0d35740b177ab");
+
         System.out.println("----------department一级缓存生效，控制台看不见SQL ↓------------");
+        System.out.println(departmentMapper.findById("18ec781fbefd727923b0d35740b177ab"));
+
+        System.out.println("----------清除一级缓存 ↓------------");
+        departmentMapper.cleanCathe();
+        System.out.println("----------清除后department再一次查询，SQL再次出现 ↓------------");
         departmentMapper.findById("18ec781fbefd727923b0d35740b177ab");
 
         System.out.println("---------- 关闭SQLSession，使department二级缓存生效 ------------");
-        sqlSession.close();
+//        sqlSession.close();
+        sqlSession.commit();
 
         SqlSession sqlSession2 = sqlSessionFactory.openSession();
         DepartmentMapper departmentMapper2 = sqlSession2.getMapper(DepartmentMapper.class);
