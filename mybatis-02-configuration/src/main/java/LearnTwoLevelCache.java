@@ -34,7 +34,7 @@ public class LearnTwoLevelCache {
         System.out.println("----------department第一次查询 ↓------------");
         List<Department> departments1 = departmentMapper1.findAll();
         System.out.println("----------user第一次查询 ↓------------");
-        List<User> users1 = userMapper1.findAll();
+//        List<User> users1 = userMapper1.findAll();
 
         sqlSession1.commit();
 
@@ -45,7 +45,7 @@ public class LearnTwoLevelCache {
         System.out.println("----------department第二次查询 ↓------------");
         List<Department> departments2 = departmentMapper2.findAll();
         System.out.println("----------user第二次查询 ↓------------");
-        List<User> users2 = userMapper2.findAll();
+//        List<User> users2 = userMapper2.findAll();
 
 
         sqlSession1.close();
