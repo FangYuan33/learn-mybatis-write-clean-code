@@ -60,12 +60,12 @@
         user.birthday
     </sql>
 
-    <select id="findAll" resultMap="userMap">
-        select u.*, td.id, td.name as department_name
-        from user u
-        left join department td
-        on u.department_id = td.id
-    </select>
+<!--    <select id="findAll" resultMap="userMap">-->
+<!--        select u.*, td.id, td.name as department_name-->
+<!--        from user u-->
+<!--        left join department td-->
+<!--        on u.department_id = td.id-->
+<!--    </select>-->
 
     <select id="findAllWithConstructorResultMap" resultMap="constructorUserMap">
         select *
@@ -119,5 +119,9 @@
         </where>
     </select>
 
-    <cache readOnly="true"/>
+    <select id="findAll" resultType="User">
+        select * from user
+    </select>
+
+    <cache />
 </mapper>
