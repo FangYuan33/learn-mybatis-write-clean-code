@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="mybatis02configuration" />
         <module name="mybatis-02-configuration" />
+        <module name="mybatis-18-plugin" />
         <module name="mybatis03mapper" />
       </profile>
     </annotationProcessing>
