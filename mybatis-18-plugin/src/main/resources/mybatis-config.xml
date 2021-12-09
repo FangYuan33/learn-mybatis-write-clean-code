@@ -15,6 +15,9 @@
     
     <plugins>
         <plugin interceptor="interceptor.UpdateInterceptor"/>
+        <plugin interceptor="interceptor.PerformanceInterceptor">
+            <property name="maxTolerate" value="10"/>
+        </plugin>
     </plugins>
 
     <environments default="development">

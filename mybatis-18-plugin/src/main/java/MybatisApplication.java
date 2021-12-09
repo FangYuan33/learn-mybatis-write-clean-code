@@ -1,5 +1,6 @@
 
 import dao.DeptMapper;
+import dao.UserMapper;
 import entity.Dept;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -14,9 +15,12 @@ public class MybatisApplication {
     public static void main(String[] args) throws IOException {
         SqlSession sqlSession = getSqlSession();
         DeptMapper deptMapper = sqlSession.getMapper(DeptMapper.class);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 
         Dept dept = new Dept(1, "运配", "12345678910");
-        deptMapper.updateByEntity(dept);
+//        deptMapper.updateByEntity(dept);
+
+        userMapper.findAll();
 
 //        sqlSession.commit();
         sqlSession.close();
