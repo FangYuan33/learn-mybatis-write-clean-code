@@ -13,6 +13,7 @@
         <module>mybatis-02-configuration</module>
         <module>mybatis-18-plugin</module>
         <module>mybatis-21-spring</module>
+        <module>mybatis-23-life</module>
     </modules>
 
     <dependencyManagement>

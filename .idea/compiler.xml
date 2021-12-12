@@ -7,10 +7,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="mybatis-21-spring" />
         <module name="mybatis02configuration" />
         <module name="mybatis-02-configuration" />
         <module name="mybatis-18-plugin" />
+        <module name="mybatis-23-life" />
+        <module name="mybatis-21-spring" />
+        <module name="mybatis-23-life (1)" />
         <module name="mybatis03mapper" />
       </profile>
     </annotationProcessing>
