@@ -12,6 +12,7 @@
     <modules>
         <module>mybatis-02-configuration</module>
         <module>mybatis-18-plugin</module>
+        <module>mybatis-21-spring</module>
     </modules>
 
     <dependencyManagement>
@@ -54,6 +55,11 @@
             <dependency>
                 <groupId>learn_mybatis</groupId>
                 <artifactId>mybatis-02-configuration</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>learn_mybatis</groupId>
+                <artifactId>mybatis-21-spring</artifactId>
             </dependency>
         </dependencies>
     </dependencyManagement>
