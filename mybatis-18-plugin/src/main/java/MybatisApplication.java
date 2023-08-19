@@ -12,15 +12,47 @@ import java.io.InputStream;
 
 
 public class MybatisApplication {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         SqlSession sqlSession = getSqlSession();
         DeptMapper deptMapper = sqlSession.getMapper(DeptMapper.class);
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 
-        Dept dept = new Dept(1, "运配", "12345678910");
-//        deptMapper.updateByEntity(dept);
 
-        userMapper.findAll();
+        for (int i = 0; i < 100; i++) {
+            try {
+                Dept dept = new Dept(i, "运配", "12345678910");
+                deptMapper.updateByEntity(dept);
+            } catch (Exception e) {
+
+            }
+        }
+
+        new Thread(() -> {
+            for (int i = 0; i < 100; i++) {
+                try {
+                    Dept dept = new Dept(i, "运配", "12345678910");
+                    deptMapper.updateByEntity(dept);
+                } catch (Exception e) {
+
+                }
+            }
+        }).start();
+
+        new Thread(() -> {
+            for (int i = 0; i < 100; i++) {
+                try {
+                    Dept dept = new Dept(i, "运配", "12345678910");
+                    deptMapper.updateByEntity(dept);
+                } catch (Exception e) {
+
+                }
+            }
+        }).start();
+
+        Thread.sleep(5000);
+
+
+//        userMapper.findAll();
 
 //        sqlSession.commit();
         sqlSession.close();

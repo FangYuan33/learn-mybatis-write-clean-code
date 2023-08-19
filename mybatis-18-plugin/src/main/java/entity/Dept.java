@@ -32,4 +32,13 @@ public class Dept {
     private String name;
 
     private String tel;
+
+    @Override
+    public String toString() {
+        return "Dept{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", tel='" + tel + '\'' +
+                '}';
+    }
 }
