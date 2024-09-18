@@ -6,7 +6,13 @@
 
     <groupId>com.mybatis.book</groupId>
     <artifactId>book-mybatis</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
+    <modules>
+        <!-- 源码 -->
+        <module>mybatis-source-code</module>
+        <!-- 学习样例 -->
+        <module>mybatis-learn</module>
+    </modules>
     <version>1.0</version>
 
     <dependencies>
