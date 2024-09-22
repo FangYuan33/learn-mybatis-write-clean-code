@@ -26,8 +26,7 @@
     <relativePath />
   </parent>
 
-  <groupId>org.mybatis</groupId>
-  <artifactId>mybatis</artifactId>
+  <artifactId>mybatis-source-code</artifactId>
   <version>3.5.16</version>
 
   <name>mybatis-source-code</name>
