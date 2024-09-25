@@ -119,7 +119,6 @@ class BaseExecutorTest extends BaseDataTest {
 
   @Test
   void shouldSelectAllAuthorsAutoMapped() throws Exception {
-
     Executor executor = createExecutor(new JdbcTransaction(ds, null, false));
     try {
       MappedStatement selectStatement = ExecutorTestHelper.prepareSelectAllAuthorsAutoMappedStatement(config);

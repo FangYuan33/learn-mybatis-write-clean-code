@@ -27,6 +27,7 @@ public class Test {
     public static SqlSession getSqlSession() throws IOException {
         InputStream xml = Resources.getResourceAsStream("mybatis-config.xml");
         SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+        // todo learn mybatis-config.xml parse
         SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(xml);
 
         return sqlSessionFactory.openSession();

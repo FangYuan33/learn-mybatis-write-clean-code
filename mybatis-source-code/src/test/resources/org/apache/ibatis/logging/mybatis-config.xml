@@ -23,7 +23,7 @@
 <configuration>
 
     <settings>
-        <setting name="logImpl" value="NO_LOGGING"/>
+        <setting name="logImpl" value="LOG4J"/>
     </settings>
 
 </configuration>

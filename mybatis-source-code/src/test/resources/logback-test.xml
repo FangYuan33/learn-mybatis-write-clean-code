@@ -19,7 +19,7 @@
 <!DOCTYPE configuration>
 <configuration>
 
-  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
     </encoder>
@@ -28,18 +28,18 @@
             class="org.apache.ibatis.session.AutoMappingUnknownColumnBehaviorTest$LastEventSavedAppender"/>
 
   <logger name="org.apache.ibatis">
-    <level value="error"/>
+    <level value="debug"/>
   </logger>
   <logger name="org.apache.ibatis.logging">
     <level value="debug"/>
   </logger>
   <logger name="org.apache.ibatis.session.AutoMappingUnknownColumnBehavior">
-    <level value="warn"/>
+    <level value="debug"/>
     <appender-ref ref="lastEventSavedAppender"/>
   </logger>
 
-  <root level="error">
-    <appender-ref ref="stdout"/>
+  <root level="debug">
+    <appender-ref ref="CONSOLE"/>
   </root>
 
 </configuration>
