@@ -62,6 +62,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
       if (jdbcType == null) {
         throw new TypeException("JDBC requires that the JdbcType must be specified for all nullable parameters.");
       }
+
       try {
         ps.setNull(i, jdbcType.TYPE_CODE);
       } catch (SQLException e) {
@@ -71,6 +72,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
       }
     } else {
       try {
+        // 根据不同的类型做不同的实现
         setNonNullParameter(ps, i, parameter, jdbcType);
       } catch (Exception e) {
         throw new TypeException("Error setting non null for parameter #" + i + " with JdbcType " + jdbcType + " . "
@@ -79,6 +81,8 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
       }
     }
   }
+
+  public abstract void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
 
   @Override
   public T getResult(ResultSet rs, String columnName) throws SQLException {
@@ -90,6 +94,19 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
     }
   }
 
+  /**
+   * Gets the nullable result.
+   *
+   * @param rs the rs
+   * @param columnName Column name, when configuration <code>useColumnLabel</code> is <code>false</code>
+   *
+   * @return the nullable result
+   *
+   * @throws SQLException
+   *           the SQL exception
+   */
+  public abstract T getNullableResult(ResultSet rs, String columnName) throws SQLException;
+
   @Override
   public T getResult(ResultSet rs, int columnIndex) throws SQLException {
     try {
@@ -100,6 +117,8 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
     }
   }
 
+  public abstract T getNullableResult(ResultSet rs, int columnIndex) throws SQLException;
+
   @Override
   public T getResult(CallableStatement cs, int columnIndex) throws SQLException {
     try {
@@ -109,26 +128,6 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
           "Error attempting to get column #" + columnIndex + " from callable statement.  Cause: " + e, e);
     }
   }
-
-  public abstract void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType)
-      throws SQLException;
-
-  /**
-   * Gets the nullable result.
-   *
-   * @param rs
-   *          the rs
-   * @param columnName
-   *          Column name, when configuration <code>useColumnLabel</code> is <code>false</code>
-   *
-   * @return the nullable result
-   *
-   * @throws SQLException
-   *           the SQL exception
-   */
-  public abstract T getNullableResult(ResultSet rs, String columnName) throws SQLException;
-
-  public abstract T getNullableResult(ResultSet rs, int columnIndex) throws SQLException;
 
   public abstract T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException;
 

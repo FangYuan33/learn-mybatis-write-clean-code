@@ -54,7 +54,9 @@ import org.apache.ibatis.session.Configuration;
  */
 public final class TypeHandlerRegistry {
 
+  // key: jdbcType value: TypeHandler
   private final Map<JdbcType, TypeHandler<?>> jdbcTypeHandlerMap = new EnumMap<>(JdbcType.class);
+  // key: javaType value: (key: jdbcType, value: TypeHandler)
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> typeHandlerMap = new ConcurrentHashMap<>();
   private final TypeHandler<Object> unknownTypeHandler;
   private final Map<Class<?>, TypeHandler<?>> allTypeHandlersMap = new HashMap<>();
@@ -84,6 +86,7 @@ public final class TypeHandlerRegistry {
     register(Boolean.class, new BooleanTypeHandler());
     register(boolean.class, new BooleanTypeHandler());
     register(JdbcType.BOOLEAN, new BooleanTypeHandler());
+    // 有意思的是 位 标识符被识别为 Java 中的 Boolean 类型
     register(JdbcType.BIT, new BooleanTypeHandler());
 
     register(Byte.class, new ByteTypeHandler());
@@ -368,6 +371,10 @@ public final class TypeHandlerRegistry {
     register((Type) javaType, typeHandler);
   }
 
+  public <T> void register(TypeReference<T> javaTypeReference, TypeHandler<? extends T> handler) {
+    register(javaTypeReference.getRawType(), handler);
+  }
+
   private <T> void register(Type javaType, TypeHandler<? extends T> typeHandler) {
     MappedJdbcTypes mappedJdbcTypes = typeHandler.getClass().getAnnotation(MappedJdbcTypes.class);
     if (mappedJdbcTypes != null) {
@@ -382,10 +389,6 @@ public final class TypeHandlerRegistry {
     }
   }
 
-  public <T> void register(TypeReference<T> javaTypeReference, TypeHandler<? extends T> handler) {
-    register(javaTypeReference.getRawType(), handler);
-  }
-
   // java type + jdbc type + handler
 
   // Cast is required here
@@ -396,11 +399,13 @@ public final class TypeHandlerRegistry {
 
   private void register(Type javaType, JdbcType jdbcType, TypeHandler<?> handler) {
     if (javaType != null) {
+      // initial java 类型对应的 jdbc 类型的类型处理器
       Map<JdbcType, TypeHandler<?>> map = typeHandlerMap.get(javaType);
       if (map == null || map == NULL_TYPE_HANDLER_MAP) {
         map = new HashMap<>();
       }
       map.put(jdbcType, handler);
+      // 同一个Java类型可以对应多个 jdbc 类型
       typeHandlerMap.put(javaType, map);
     }
     allTypeHandlersMap.put(handler.getClass(), handler);

@@ -98,7 +98,6 @@ class BaseExecutorTest extends BaseDataTest {
 
   @Test
   void shouldInsertNewAuthor() throws Exception {
-
     Executor executor = createExecutor(new JdbcTransaction(ds, null, false));
     try {
       Author author = new Author(99, "someone", "******", "someone@apache.org", null, Section.NEWS);
