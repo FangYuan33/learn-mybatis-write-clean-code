@@ -10,8 +10,6 @@
     <modules>
         <!-- 源码 -->
         <module>mybatis-source-code</module>
-        <!-- 学习样例 -->
-        <module>mybatis-learn</module>
     </modules>
     <version>1.0</version>
 

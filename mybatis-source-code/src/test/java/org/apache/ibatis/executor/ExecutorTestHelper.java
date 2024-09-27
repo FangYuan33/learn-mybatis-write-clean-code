@@ -158,7 +158,7 @@ class ExecutorTestHelper {
         final TypeHandlerRegistry registry = config.getTypeHandlerRegistry();
 
         final ResultMap rm = new ResultMap.Builder(config, "defaultResultMap", Author.class,
-                new ArrayList<ResultMapping>() {
+                new ArrayList<>() {
                     private static final long serialVersionUID = 1L;
 
                     {
@@ -176,15 +176,14 @@ class ExecutorTestHelper {
 
         return new MappedStatement.Builder(config, "selectAuthor",
                 new StaticSqlSource(config, "SELECT * FROM author WHERE id = ?"), SqlCommandType.SELECT).parameterMap(
-                new ParameterMap.Builder(config, "defaultParameterMap", Author.class, new ArrayList<ParameterMapping>() {
+                new ParameterMap.Builder(config, "defaultParameterMap", Author.class, new ArrayList<>() {
                     private static final long serialVersionUID = 1L;
 
                     {
                         add(new ParameterMapping.Builder(config, "id", registry.getTypeHandler(int.class)).build());
                     }
-                }).build()).resultMaps(new ArrayList<ResultMap>() {
+                }).build()).resultMaps(new ArrayList<>() {
             private static final long serialVersionUID = 1L;
-
             {
                 add(rm);
             }

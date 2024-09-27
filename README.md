@@ -157,6 +157,33 @@ public class MyBatisExample {
    - `getKeyColumns()`：获取主键列。
    - `getDatabaseId()`：获取数据库厂商标识。
 
+##### 建造者模式
+
+
+
+#### StatementHandler
+
+`org.apache.ibatis.executor.statement.StatementHandler` 是 MyBatis 框架中的一个接口，它定义了处理 SQL 语句的核心方法，**提供统一的接口供框架调用**。它的主要职责是准备和执行 SQL 语句，并处理结果集。`StatementHandler` 是 MyBatis 执行 SQL 语句的关键组件之一，它通过 `Executor` 类与数据库交互。
+
+`StatementHandler` 主要有以下几个实现类：
+
+1. `SimpleStatementHandler`
+2. `PreparedStatementHandler`
+3. `CallableStatementHandler`
+
+每个实现类对应不同类型的 SQL 语句处理方式，例如 `SimpleStatementHandler` 处理简单的 SQL 语句，`PreparedStatementHandler` 处理预编译语句，`CallableStatementHandler` 处理存储过程调用。
+
+以下是 `StatementHandler` 接口的一些核心方法：
+
+1. `prepare(Connection connection, Integer transactionTimeout)`: 准备 SQL 语句
+2. `parameterize(Statement statement)`: 处理 SQL 语句的参数
+3. `batch(Statement statement)`: 批量执行 SQL 语句
+4. `update(Statement statement)`: 执行更新操作
+5. `query(Statement statement, ResultHandler resultHandler)`: 执行查询操作
+6. `getBoundSql()`: 获取绑定的 SQL 语句
+
+这些方法共同作用，完成 SQL 语句从准备到执行再到结果处理的整个过程。
+
 #### TypeHandler
 
 1. 将Java类型的数据转换为数据库类型的数据。
@@ -183,6 +210,70 @@ MyBatis框架提供了一些默认的`TypeHandler`实现，例如处理字符串
 如上图所示，`TypeHandler` 使用了模板方法和策略模式，根据不同的 JavaType 来实现不同的策略，由于其中部分逻辑是通用的，所以抽出了抽象层定义方法模板来实现代码的复用。
 
 （可以将策略模式的意义理解成是对 `PreparedStatement` 和 `ResultSet` 公开出适配不同类型的方法的调用）
+
+#### ParameterMapping
+
+`org.apache.ibatis.mapping.ParameterMapping` 是 MyBatis 框架中的一个类，用于描述 SQL 语句中的参数映射。它在 MyBatis 执行 SQL 语句时，帮助将 Java 对象的属性与 SQL 语句中的参数进行关联。以下是 `ParameterMapping` 类的一些重要方面：
+
+##### 主要属性
+
+- **property**: 参数对应的 Java 对象的属性名称。
+- **mode**: 参数的模式，通常是 `IN`、`OUT` 或 `INOUT`，用于存储过程调用。
+- **javaType**: 参数的 Java 类型。
+- **jdbcType**: 参数的 JDBC 类型。
+- **numericScale**: 对于数字类型参数，指定小数点后的位数。
+- **resultMapId**: 如果参数是一个复杂类型，可以指定一个 resultMap 来进行映射。
+- **typeHandler**: 用于将参数值从 Java 类型转换为 JDBC 类型的处理器。
+
+##### 使用场景
+
+- **动态 SQL**: 在构建动态 SQL 语句时，`ParameterMapping` 用于描述每个参数的详细信息。
+- **存储过程**: 在调用存储过程时，用于描述输入和输出参数的类型和模式。
+
+#### ResultMapping
+
+`org.apache.ibatis.mapping.ResultMapping` 是 MyBatis 框架中的一个类，用于描述 **从数据库结果集到 Java 对象的映射关系**。它主要用于定义如何将查询结果映射到 Java 对象的属性上。以下是 `ResultMapping` 类的一些关键点：
+
+##### 主要属性
+
+- **property**: Java 对象中的属性名。
+- **column**: 数据库表中的列名。
+- **javaType**: Java 对象的类型。
+- **jdbcType**: JDBC 类型。
+- **typeHandler**: 类型处理器，用于处理特定类型的转换。
+- **nestedResultMapId**: 嵌套的结果映射 ID。
+- **nestedQueryId**: 嵌套查询的 ID。
+- **notNullColumns**: 非空列。
+- **columnPrefix**: 列前缀。
+- **flags**: 一些标志位，比如 ID、构造函数等。
+- **composites**: 复合列，用于多列映射。
+- **resultSet**: 结果集名称，用于处理多结果集的情况。
+- **foreignColumn**: 外键列名。
+- **lazy**: 是否延迟加载。
+
+##### 示例
+
+`ResultMapping` 通常通过 MyBatis 的内部构建器模式来创建，而不是直接实例化。可以使用 `ResultMapping.Builder` 类来构建一个 `ResultMapping` 实例。
+
+以下是一个简单的 `ResultMapping` 配置示例：
+
+```xml
+<resultMap id="userResultMap" type="com.example.User">
+  <id property="id" column="id" />
+  <result property="username" column="username" />
+  <result property="email" column="email" />
+</resultMap>
+```
+
+在 Java 代码中，可以通过以下方式来创建 `ResultMapping`：
+
+```java
+ResultMapping resultMapping = new ResultMapping.Builder(configuration, "property", "column")
+    .javaType(String.class)
+    .jdbcType(JdbcType.VARCHAR)
+    .typeHandler(new StringTypeHandler())
+    .build();
+```
 
 ---
 
