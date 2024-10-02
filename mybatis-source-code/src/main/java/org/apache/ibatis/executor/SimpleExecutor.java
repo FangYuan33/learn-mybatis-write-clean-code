@@ -46,7 +46,8 @@ public class SimpleExecutor extends BaseExecutor {
         try {
             Configuration configuration = ms.getConfiguration();
             StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
-            // 预处理SQL语句
+            // 预处理SQL语句，为其封装SQL中的参数，将 ? 占位符替换掉
+            // Mybatis 本身已经实现了很多 TypeHandler 处理不同的对象类型，并且传参中包含 PreparedStatement 由 jdbc 做具体实现
             stmt = prepareStatement(handler, ms.getStatementLog());
             return handler.update(stmt);
         } finally {

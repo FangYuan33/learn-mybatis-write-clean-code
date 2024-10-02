@@ -34,11 +34,12 @@ import org.apache.ibatis.session.RowBounds;
  */
 public class RoutingStatementHandler implements StatementHandler {
 
+    // 代理对象
     private final StatementHandler delegate;
 
     public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds,
                                    ResultHandler resultHandler, BoundSql boundSql) {
-
+        // 在调用构造方法时，根据 statementType 字段为代理对象 delegate 赋值，那么这样便实现了复杂度隐藏，只由代理对象去帮忙路由具体的实现即可
         switch (ms.getStatementType()) {
             case STATEMENT:
                 delegate = new SimpleStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);

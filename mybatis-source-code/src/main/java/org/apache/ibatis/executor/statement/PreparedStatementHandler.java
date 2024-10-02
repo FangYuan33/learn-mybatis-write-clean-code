@@ -45,6 +45,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     @Override
     public int update(Statement statement) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
+        // jdbc 的 ClientPreparedStatement 编码后发送给MySQL执行
         ps.execute();
         int rows = ps.getUpdateCount();
         Object parameterObject = boundSql.getParameterObject();

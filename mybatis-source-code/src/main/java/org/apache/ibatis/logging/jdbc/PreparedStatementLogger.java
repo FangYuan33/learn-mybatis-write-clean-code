@@ -47,9 +47,11 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
         return method.invoke(this, params);
       }
       if (EXECUTE_METHODS.contains(method.getName())) {
+        // 在这里打印 SQL 的参数
         if (isDebugEnabled()) {
           debug("Parameters: " + getParameterValueString(), true);
         }
+        // 清除参数信息
         clearColumnInfo();
         if ("executeQuery".equals(method.getName())) {
           ResultSet rs = (ResultSet) method.invoke(statement, params);

@@ -1,22 +1,29 @@
 ### 基础组件
 
+### java.sql
+
 #### PreparedStatement
 
 `PreparedStatement` 是 JDBC 中一个强大而安全的接口，通过预编译 SQL 语句和使用占位符来设置参数，可以提高性能并防止 SQL 注入攻击。
 
 ##### 1. 预编译和缓存
+
 `PreparedStatement` 对象代表一个预编译的 SQL 语句。预编译的好处是 SQL 语句只需要编译一次，而不需要每次执行时都重新编译。这对于频繁执行相同 SQL 语句的场景可以显著提高性能。
 
 ##### 2. 防止 SQL 注入
+
 使用 `PreparedStatement` 可以有效防止 SQL 注入攻击。因为它使用占位符 (`?`) 来表示参数，而不是直接将用户输入拼接到 SQL 语句中，这样可以避免恶意用户通过特殊字符来篡改 SQL 语句。
 
 ##### 3. 设置参数
+
 在 `PreparedStatement` 中，可以使用各种 `set` 方法来设置参数（如 `setInt`、`setString` 等）。这些方法会将参数值绑定到 SQL 语句中的对应占位符上。
 
 ##### 4. 执行 SQL 语句
+
 `PreparedStatement` 可以执行各种类型的 SQL 语句，包括查询（`executeQuery`）、更新（`executeUpdate`）和任意 SQL 语句（`execute`）。
 
 ##### 示例代码
+
 以下是一个使用 `PreparedStatement` 的简单示例：
 
 ```java
@@ -59,6 +66,177 @@ public class PreparedStatementExample {
 2. 创建 `PreparedStatement` 对象，并在 SQL 语句中使用占位符 (`?`)。
 3. 使用 `setString` 方法设置参数值。
 4. 执行查询并处理结果集。
+
+### Debug logger
+
+#### Log
+
+`org.apache.ibatis.logging.Log` 是 MyBatis 框架中的一个接口，用于抽象和实现日志记录功能。接口定义了日志记录的基本方法，这些方法通常包括以下几种：
+
+- `void error(String s, Throwable e);` 和 `void error(String s);`：用于记录错误信息。前者允许记录异常堆栈信息，后者只记录错误消息。
+- `void warn(String s);`：用于记录警告信息。
+- `void debug(String s);`：用于记录调试信息。
+- `void info(String s);`：用于记录一般信息。
+- `boolean isDebugEnabled();`：用于检查是否启用了调试级别的日志记录。
+- `boolean isTraceEnabled();`：用于检查是否启用了跟踪级别的日志记录。
+
+##### 策略模式
+
+MyBatis 支持多种日志框架，通过不同的实现类来适配这些框架。常见的实现类包括：
+
+- `org.apache.ibatis.logging.slf4j.Slf4jImpl`：使用 SLF4J 作为日志框架。
+- `org.apache.ibatis.logging.log4j2.Log4j2Impl`：使用 Log4j 2 作为日志框架。
+- `org.apache.ibatis.logging.jdk14.Jdk14LoggingImpl`：使用 JDK 1.4 内置的日志框架（java.util.logging）。
+- `org.apache.ibatis.logging.nologging.NoLoggingImpl`：不记录任何日志。
+
+可以在 MyBatis 配置文件（如 mybatis-config.xml）中指定所使用的日志实现，例如：
+
+```xml
+<configuration>
+  <settings>
+    <setting name="logImpl" value="SLF4J"/>
+  </settings>
+</configuration>
+```
+
+常见值包括：
+
+1. `SLF4J`：使用 SLF4J 作为日志框架。
+2. ~~`LOG4J`~~：使用 Log4j 作为日志框架。
+3. `LOG4J2`：使用 Log4j2 作为日志框架。
+4. `JDK_LOGGING`：使用 JDK 自带的日志框架（java.util.logging）。
+5. `COMMONS_LOGGING`：使用 Apache Commons Logging 作为日志框架。
+6. `STDOUT_LOGGING`：将日志输出到标准输出（控制台）。
+7. `NO_LOGGING`：禁用日志。
+
+#### ConnectionLogger
+
+`org.apache.ibatis.logging.jdbc.ConnectionLogger` 是 MyBatis 提供的一个工具类，它继承自 `BaseJdbcLogger`，并实现了 `InvocationHandler` 接口。`BaseJdbcLogger` 提供了基本的日志记录功能，而 `InvocationHandler` 允许 `ConnectionLogger` 代理 JDBC 连接对象，从而拦截和记录对连接对象的方法调用，用于记录和监控 JDBC 连接的相关信息。
+
+##### 动态代理
+
+**创建代理对象**：`ConnectionLogger` 提供了一个静态方法 `newInstance`，用于创建一个代理的 JDBC 连接对象。这个代理对象会拦截对原始连接对象的方法调用，并通过 `ConnectionLogger` 记录相关信息。
+
+ ```java
+public static Connection newInstance(Connection conn, Log statementLog, int queryStack) {
+    InvocationHandler handler = new ConnectionLogger(conn, statementLog, queryStack);
+    ClassLoader cl = Connection.class.getClassLoader();
+    return (Connection) Proxy.newProxyInstance(cl, new Class[] { Connection.class }, handler);
+}
+ ```
+
+**日志记录**：`ConnectionLogger` 使用 `Log` 对象来记录日志信息。`Log` 是 MyBatis 的一个抽象日志接口，它可以与不同的日志实现（如 Log4j, SLF4J 等）集成。`ConnectionLogger` 会记录连接的创建、关闭以及一些其他重要的方法调用。
+
+```java
+@Override
+public Object invoke(Object proxy, Method method, Object[] params) throws Throwable {
+    try {
+        if (Object.class.equals(method.getDeclaringClass())) {
+            return method.invoke(this, params);
+        }
+        if ("prepareStatement".equals(method.getName()) || "prepareCall".equals(method.getName())) {
+            if (isDebugEnabled()) {
+                debug(" Preparing: " + removeExtraWhitespace((String) params[0]), true);
+            }
+            PreparedStatement stmt = (PreparedStatement) method.invoke(connection, params);
+            return PreparedStatementLogger.newInstance(stmt, statementLog, queryStack);
+        }
+        if ("createStatement".equals(method.getName())) {
+            Statement stmt = (Statement) method.invoke(connection, params);
+            return StatementLogger.newInstance(stmt, statementLog, queryStack);
+        }
+        return method.invoke(connection, params);
+    } catch (Throwable t) {
+        throw ExceptionUtil.unwrapThrowable(t);
+    }
+}
+```
+
+#### PreparedStatementLogger
+
+`org.apache.ibatis.logging.jdbc.PreparedStatementLogger` 主要用于记录通过 `PreparedStatement` 执行的 SQL 语句和相关参数。它实现了 `InvocationHandler` 接口，通过动态代理的方式拦截 `PreparedStatement` 的方法调用，从而在执行 SQL 语句之前和之后进行日志记录。
+
+##### 动态代理模式
+
+`PreparedStatementLogger` 使用 Java 的动态代理机制拦截 `PreparedStatement` 的方法调用。这意味着在执行 SQL 语句时，MyBatis 会使用代理对象来代替实际的 `PreparedStatement` 对象，从而能够在执行 SQL 语句时进行日志记录，如下是代码实现：
+
+```java
+public final class PreparedStatementLogger extends BaseJdbcLogger implements InvocationHandler {
+
+  private final PreparedStatement statement;
+
+  private PreparedStatementLogger(PreparedStatement stmt, Log statementLog, int queryStack) {
+    super(statementLog, queryStack);
+    this.statement = stmt;
+  }
+
+  @Override
+  public Object invoke(Object proxy, Method method, Object[] params) throws Throwable {
+    try {
+      if (Object.class.equals(method.getDeclaringClass())) {
+        return method.invoke(this, params);
+      }
+      if (EXECUTE_METHODS.contains(method.getName())) {
+        if (isDebugEnabled()) {
+          // 在这里记录 SQL 语句和参数
+          debug("Parameters: " + getParameterValueString(), true);
+        }
+        clearColumnInfo();
+        if ("executeQuery".equals(method.getName())) {
+          ResultSet rs = (ResultSet) method.invoke(statement, params);
+          return rs == null ? null : ResultSetLogger.newInstance(rs, statementLog, queryStack);
+        } else {
+          return method.invoke(statement, params);
+        }
+      }
+      if (SET_METHODS.contains(method.getName())) {
+        if ("setNull".equals(method.getName())) {
+          setColumn(params[0], null);
+        } else {
+          setColumn(params[0], params[1]);
+        }
+        return method.invoke(statement, params);
+      } else if ("getResultSet".equals(method.getName())) {
+        ResultSet rs = (ResultSet) method.invoke(statement, params);
+        return rs == null ? null : ResultSetLogger.newInstance(rs, statementLog, queryStack);
+      } else if ("getUpdateCount".equals(method.getName())) {
+        int updateCount = (Integer) method.invoke(statement, params);
+        if (updateCount != -1) {
+          debug("   Updates: " + updateCount, false);
+        }
+        return updateCount;
+      } else {
+        return method.invoke(statement, params);
+      }
+    } catch (Throwable t) {
+      throw ExceptionUtil.unwrapThrowable(t);
+    }
+  }
+
+  /**
+   * Creates a logging version of a PreparedStatement.
+   *
+   * @return - the proxy
+   */
+  public static PreparedStatement newInstance(PreparedStatement stmt, Log statementLog, int queryStack) {
+    InvocationHandler handler = new PreparedStatementLogger(stmt, statementLog, queryStack);
+    ClassLoader cl = PreparedStatement.class.getClassLoader();
+    return (PreparedStatement) Proxy.newProxyInstance(cl,
+            new Class[]{PreparedStatement.class, CallableStatement.class}, handler);
+  }
+
+  /**
+   * Return the wrapped prepared statement.
+   *
+   * @return the PreparedStatement
+   */
+  public PreparedStatement getPreparedStatement() {
+    return statement;
+  }
+}
+```
+
+### org.apache.ibatis
 
 #### Configuration
 
@@ -163,26 +341,84 @@ public class MyBatisExample {
 
 #### StatementHandler
 
-`org.apache.ibatis.executor.statement.StatementHandler` 是 MyBatis 框架中的一个接口，它定义了处理 SQL 语句的核心方法，**提供统一的接口供框架调用**。它的主要职责是准备和执行 SQL 语句，并处理结果集。`StatementHandler` 是 MyBatis 执行 SQL 语句的关键组件之一，它通过 `Executor` 类与数据库交互。
+`org.apache.ibatis.executor.statement.StatementHandler` 是 MyBatis 框架中的一个接口，它定义了处理 SQL 语句的核心方法，**提供统一的接口供框架调用**。它的主要职责是 **准备（prepare）、执行 SQL 语句和处理结果集**。`StatementHandler` 是 MyBatis 执行 SQL 语句的关键组件之一，它通过 `Executor` 类与数据库交互。
 
 `StatementHandler` 主要有以下几个实现类：
 
-1. `SimpleStatementHandler`
-2. `PreparedStatementHandler`
-3. `CallableStatementHandler`
+1. `BaseStatementHandler`: 抽象类（并没有添加 Abstract 的命名），提供了一些基本的 SQL 操作方法。具体的 `SimpleStatementHandler`, `PreparedStatementHandler`, 和 `CallableStatementHandler` 都继承自该类
+2. `RoutingStatementHandler`: 它是一个代理类，主要职责是根据不同的 `StatementType`（如 `STATEMENT`, `PREPARED`, `CALLABLE`）来路由到具体的 `StatementHandler` 实现
+3. `SimpleStatementHandler`: 处理不带参数的简单 SQL 语句
+4. `PreparedStatementHandler`: 处理带参数的预编译 SQL 语句
+5. `CallableStatementHandler`: 处理使用存储过程调用的 SQL 语句
 
 每个实现类对应不同类型的 SQL 语句处理方式，例如 `SimpleStatementHandler` 处理简单的 SQL 语句，`PreparedStatementHandler` 处理预编译语句，`CallableStatementHandler` 处理存储过程调用。
 
 以下是 `StatementHandler` 接口的一些核心方法：
 
-1. `prepare(Connection connection, Integer transactionTimeout)`: 准备 SQL 语句
-2. `parameterize(Statement statement)`: 处理 SQL 语句的参数
+1. `prepare(Connection connection, Integer transactionTimeout)`: 根据 SQL 语句的类型创建不同的 `Statement` 对象（具体实现详见 `RoutingStatementHandler`），并赋值相关参数（超时时间，Fetch Size：数据库客户端参数配置，用于控制每次拉取的最大数据数目和处理 keyGenerator 等等）
+2. `parameterize(Statement statement)`: 处理 SQL 语句的参数，详见 `ParameterHandler`
 3. `batch(Statement statement)`: 批量执行 SQL 语句
 4. `update(Statement statement)`: 执行更新操作
 5. `query(Statement statement, ResultHandler resultHandler)`: 执行查询操作
 6. `getBoundSql()`: 获取绑定的 SQL 语句
 
 这些方法共同作用，完成 SQL 语句从准备到执行再到结果处理的整个过程。
+
+##### 静态代理模式
+
+`RoutingStatementHandler` 使用了 **静态代理模式**，在调用它的构造方法时，其中包含具体实现类的类型，为代理对象 `delegate` 对象赋值，在调用具体方法时，则匹配具体的实现类
+
+```java
+public class RoutingStatementHandler implements StatementHandler {
+
+    // 代理对象
+    private final StatementHandler delegate;
+
+    public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds,
+                                   ResultHandler resultHandler, BoundSql boundSql) {
+        // 在调用构造方法时，根据 statementType 字段为代理对象 delegate 赋值，那么这样便实现了复杂度隐藏，只由代理对象去帮忙路由具体的实现即可
+        switch (ms.getStatementType()) {
+            case STATEMENT:
+                delegate = new SimpleStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
+                break;
+            case PREPARED:
+                delegate = new PreparedStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
+                break;
+            case CALLABLE:
+                delegate = new CallableStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
+                break;
+            default:
+                throw new ExecutorException("Unknown statement type: " + ms.getStatementType());
+        }
+
+    }
+
+    @Override
+    public Statement prepare(Connection connection, Integer transactionTimeout) throws SQLException {
+        return delegate.prepare(connection, transactionTimeout);
+    }
+
+    // ...
+}
+```
+
+#### ParameterHandler
+
+`org.apache.ibatis.executor.parameter.ParameterHandler` 是 MyBatis 框架中的一个接口，它负责处理 SQL 语句中的参数绑定。具体来说，它的主要职责是将用户传入的参数值设置到 `java.sql.PreparedStatement` 对象中，以便在执行 SQL 查询时能够正确地使用这些参数。在 Mybatis 中的默认实现是 `DefaultParameterHandler`。
+
+以下是 `ParameterHandler` 接口的主要方法和作用：
+
+1. **`getParameterObject` 方法**：返回原始的参数对象，通常是用户传入的参数。
+  - ```java
+      Object getParameterObject();
+      ```
+
+2. **`setParameters` 方法**：将参数值设置到 `PreparedStatement` 中。
+  - ```java
+      void setParameters(PreparedStatement ps) throws SQLException;
+      ```
+
+`ParameterHandler` 根据用户传入的参数类型和 SQL 映射文件中的配置来决定如何绑定参数（`ParameterMapping` 对象）。
 
 #### TypeHandler
 
@@ -282,6 +518,24 @@ ResultMapping resultMapping = new ResultMapping.Builder(configuration, "property
 
 ---
 
+### 代码整洁之道
+
+#### 方法命名
+
+方法命名 `instantiateStatement`: instantiate 表示实例化的意思，构造对象的方法可以这么命名，而对应的为对象的字段赋值可以命名为 `initialXxx`
+
+#### 打印日志
+
+会先判断是否 debug 启动
+
+```java
+    if (isDebugEnabled()) {
+      debug(" Preparing: " + removeExtraWhitespace((String) params[0]), true);
+    }
+```
+
+---
+
 ![img.png](images/framework.png)
 
 ### SQL 执行流程
@@ -290,9 +544,9 @@ ResultMapping resultMapping = new ResultMapping.Builder(configuration, "property
 
 2. 每个组件的作用及意义
 
-3. 掌握Execute 的三个实现逻辑
+3. 掌握 Execute 的三个实现逻辑
 
-4. 掌握StatementHandler的三个实现逻辑
+4. 掌握 StatementHandler 的三个实现逻辑
 
 #### Execute 执行器
 
@@ -332,7 +586,7 @@ ResultMapping resultMapping = new ResultMapping.Builder(configuration, "property
 ### 巨人的肩膀
 
 - [Mybatis 官方文档](https://mybatis.org/mybatis-3/zh_CN/index.html)
-- [IDEA UML](https://www.jetbrains.com/help/idea/2024.1/class-diagram.html)
 - [Github: How To Read Code](https://github.com/aredridel/how-to-read-code?tab=readme-ov-file) 
 - [MyBatis源码阅读指南](https://www.bilibili.com/read/cv7933087)
 - [《玩转 MyBatis：深度解析与定制》](https://s.juejin.cn/ds/YPqNJD8/)
+- [IDEA UML](https://www.jetbrains.com/help/idea/2024.1/class-diagram.html)
