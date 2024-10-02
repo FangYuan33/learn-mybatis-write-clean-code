@@ -338,10 +338,54 @@ public class MyBatisExample {
 ##### 建造者模式
 
 
+#### Executor
+
+`org.apache.ibatis.executor.Executor` 执行器是 MyBatis 框架中的核心接口，它定义了执行 SQL 语句、管理事务和处理缓存的基本操作。Executor 负责管理 SQL 语句的执行、事务的处理以及缓存的维护等。MyBatis 提供了多个 `Executor` 的实现类，以支持不同的执行策略和性能优化，灵活地应对不同的性能和资源管理需求。
+
+##### 模板方法模式和策略模式
+
+MyBatis 提供了几种 `Executor` 的实现类，分别适用于不同的场景：
+
+###### BaseExecutor
+
+`BaseExecutor` 是所有执行器的基类，定义了执行器的基本行为和模板方法。它包含了 MyBatis 执行 SQL 语句的核心逻辑，并提供了一些公共的方法。
+
+主要功能：
+- 维护一个事务对象 `Transaction`。
+- 管理缓存 `Cache`。
+- 提供了模板方法 `query` 和 `update`，具体的执行逻辑由子类实现。
+- 提供了缓存管理的方法，如 `clearLocalCache` 和 `flushStatements`。
+
+###### SimpleExecutor
+
+`SimpleExecutor` 是 MyBatis 提供的一种简单执行器，每次执行 SQL 语句时都会创建新的 `PreparedStatement` 对象。
+
+主要功能：
+- 不进行任何缓存和重用，每次操作都新建 `PreparedStatement`。
+- 实现了最基础的 SQL 执行逻辑，适用于简单的、无需优化的场景。
+- 提供了 `doUpdate` 和 `doQuery` 方法，分别用于执行更新和查询操作。
+
+###### ReuseExecutor
+
+`ReuseExecutor` 是 MyBatis 提供的一种可重用的执行器，用于重用 `PreparedStatement`，以减少 SQL 语句解析和编译的开销。
+
+主要功能：
+- 维护一个 `Map<String, PreparedStatement>`，用于缓存和重用 `PreparedStatement` 对象。
+- 在执行 SQL 语句时，会先检查缓存，如果存在则重用，否则创建新的 `PreparedStatement` 并缓存起来。
+- 提供了 `doUpdate` 和 `doQuery` 方法，分别用于执行更新和查询操作。
+
+###### BatchExecutor
+
+`BatchExecutor` 是 MyBatis 提供的一种批量执行器，用于批量执行 SQL 语句，可以显著提高执行效率。
+
+主要功能：
+- 将多条 SQL 语句放在一个批处理中执行，减少数据库交互次数。
+- 适用于批量插入、更新和删除操作。
+- 提供了 `doUpdate` 和 `doFlushStatements` 方法，分别用于执行更新和刷新批处理语句。
 
 #### StatementHandler
 
-`org.apache.ibatis.executor.statement.StatementHandler` 是 MyBatis 框架中的一个接口，它定义了处理 SQL 语句的核心方法，**提供统一的接口供框架调用**。它的主要职责是 **准备（prepare）、执行 SQL 语句和处理结果集**。`StatementHandler` 是 MyBatis 执行 SQL 语句的关键组件之一，它通过 `Executor` 类与数据库交互。
+`org.apache.ibatis.executor.statement.StatementHandler` SQL 处理器是 MyBatis 框架中的一个接口，它定义了处理 SQL 语句的核心方法，**提供统一的接口供框架调用**。它的主要职责是 **准备（prepare）、执行 SQL 语句和处理结果集**。`StatementHandler` 是 MyBatis 执行 SQL 语句的关键组件之一，它通过 `Executor` 类与数据库交互。
 
 `StatementHandler` 主要有以下几个实现类：
 
@@ -404,7 +448,7 @@ public class RoutingStatementHandler implements StatementHandler {
 
 #### ParameterHandler
 
-`org.apache.ibatis.executor.parameter.ParameterHandler` 是 MyBatis 框架中的一个接口，它负责处理 SQL 语句中的参数绑定。具体来说，它的主要职责是将用户传入的参数值设置到 `java.sql.PreparedStatement` 对象中，以便在执行 SQL 查询时能够正确地使用这些参数。在 Mybatis 中的默认实现是 `DefaultParameterHandler`。
+`org.apache.ibatis.executor.parameter.ParameterHandler` 参数处理器是 MyBatis 框架中的一个接口，它负责处理 SQL 语句中的参数绑定。具体来说，它的主要职责是将用户传入的参数值设置到 `java.sql.PreparedStatement` 对象中，以便在执行 SQL 查询时能够正确地使用这些参数。在 Mybatis 中的默认实现是 `DefaultParameterHandler`。
 
 以下是 `ParameterHandler` 接口的主要方法和作用：
 
@@ -465,6 +509,10 @@ MyBatis框架提供了一些默认的`TypeHandler`实现，例如处理字符串
 
 - **动态 SQL**: 在构建动态 SQL 语句时，`ParameterMapping` 用于描述每个参数的详细信息。
 - **存储过程**: 在调用存储过程时，用于描述输入和输出参数的类型和模式。
+
+#### ResultSetHandler
+
+`org.apache.ibatis.executor.resultset.ResultSetHandler` 负责处理从数据库返回的 `ResultSet` 对象，并将其转换为相应的 Java 对象。`ResultSetHandler` 的常见实现类是`DefaultResultSetHandler`
 
 #### ResultMapping
 
