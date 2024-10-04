@@ -409,13 +409,15 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
     private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap, String columnPrefix) throws SQLException {
         final ResultLoaderMap lazyLoader = new ResultLoaderMap();
-        //
+        // 根据返回值对象类型调用其构造方法，该结果中所有字段未生成值
         Object rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
         if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
-            // 根据返回值对象类型调用其构造方法，该结果中所有字段未生成值
+            // 元对象
             final MetaObject metaObject = configuration.newMetaObject(rowValue);
             boolean foundValues = this.useConstructorMappings;
+            // 根据配置信息是否处理自动字段和列的映射
             if (shouldApplyAutomaticMappings(resultMap, false)) {
+                // 在这里处理 result map 中没用定义的字段和列关系的映射（自动映射列名和字段名相同）
                 foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
             }
             // 根据 result mapping 中配置的字段和数据库列的映射关系，从 resultSet 中取值后封装给 metaObject
@@ -542,6 +544,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         List<UnMappedColumnAutoMapping> autoMapping = autoMappingsCache.get(mapKey);
         if (autoMapping == null) {
             autoMapping = new ArrayList<>();
+            // 获取到所有未映射的列名
             final List<String> unmappedColumnNames = rsw.getUnmappedColumnNames(resultMap, columnPrefix);
             // Remove the entry to release the memory
             List<String> mappedInConstructorAutoMapping = constructorAutoMappingColumns.remove(mapKey);

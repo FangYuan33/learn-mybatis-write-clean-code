@@ -195,11 +195,11 @@ class ExecutorTestHelper {
         final TypeHandlerRegistry registry = config.getTypeHandlerRegistry();
         return new MappedStatement.Builder(config, "selectAuthorAutoMap",
                 new StaticSqlSource(config, "SELECT * FROM author ORDER BY id"), SqlCommandType.SELECT)
-                .resultMaps(new ArrayList<ResultMap>() {
+                .resultMaps(new ArrayList<>() {
                     private static final long serialVersionUID = 1L;
 
                     {
-                        add(new ResultMap.Builder(config, "defaultResultMap", Author.class, new ArrayList<ResultMapping>() {
+                        add(new ResultMap.Builder(config, "defaultResultMap", Author.class, new ArrayList<>() {
                             private static final long serialVersionUID = 1L;
 
                             {
