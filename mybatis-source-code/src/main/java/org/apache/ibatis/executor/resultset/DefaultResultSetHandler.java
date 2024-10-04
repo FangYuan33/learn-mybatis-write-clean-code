@@ -362,6 +362,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         ResultSet resultSet = rsw.getResultSet();
         skipRows(resultSet, rowBounds);
         while (shouldProcessMoreRows(resultContext, rowBounds) && !resultSet.isClosed() && resultSet.next()) {
+            // 定义的 resultMap 映射 Java 对象和数据库数据
             ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(resultSet, resultMap, null);
             Object rowValue = getRowValue(rsw, discriminatedResultMap, null);
             storeObject(resultHandler, resultContext, rowValue, parentMapping, resultSet);
@@ -408,13 +409,16 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
     private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap, String columnPrefix) throws SQLException {
         final ResultLoaderMap lazyLoader = new ResultLoaderMap();
+        //
         Object rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
         if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+            // 根据返回值对象类型调用其构造方法，该结果中所有字段未生成值
             final MetaObject metaObject = configuration.newMetaObject(rowValue);
             boolean foundValues = this.useConstructorMappings;
             if (shouldApplyAutomaticMappings(resultMap, false)) {
                 foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
             }
+            // 根据 result mapping 中配置的字段和数据库列的映射关系，从 resultSet 中取值后封装给 metaObject
             foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
             foundValues = lazyLoader.size() > 0 || foundValues;
             rowValue = foundValues || configuration.isReturnInstanceForEmptyRow() ? rowValue : null;
@@ -492,6 +496,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
             if (propertyMapping.isCompositeResult()
                     || column != null && mappedColumnNames.contains(column.toUpperCase(Locale.ENGLISH))
                     || propertyMapping.getResultSet() != null) {
+                // type handler 处理 result set 反射取值
                 Object value = getPropertyMappingValue(rsw.getResultSet(), metaObject, propertyMapping, lazyLoader,
                         columnPrefix);
                 // issue #541 make property optional
@@ -508,7 +513,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
                 }
                 if (value != null
                         || configuration.isCallSettersOnNulls() && !metaObject.getSetterType(property).isPrimitive()) {
-                    // gcode issue #377, call setter on nulls (value is not 'found')
+                    // 反射封装值 gcode issue #377, call setter on nulls (value is not 'found')
                     metaObject.setValue(property, value);
                 }
             }

@@ -67,6 +67,16 @@ public class PreparedStatementExample {
 3. 使用 `setString` 方法设置参数值。
 4. 执行查询并处理结果集。
 
+#### ResultSet
+
+`java.sql.ResultSet` 是 Java 数据库连接（JDBC）API 中的一个接口，用于表示数据库查询结果集。它提供了一系列方法来遍历和操作查询返回的数据。通过 `Statement`、`PreparedStatement` 或 `CallableStatement` 执行查询后，可以获得 `ResultSet` 对象。例如：
+
+```java
+Connection conn = DriverManager.getConnection(dbURL, user, password);
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery("SELECT * FROM my_table");
+```
+
 ### Debug logger
 
 #### Log
@@ -235,6 +245,10 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
   }
 }
 ```
+
+#### ResultSetLogger
+
+`org.apache.ibatis.logging.jdbc.ResultSetLogger` 用于对 JDBC ResultSet 操作进行日志记录。
 
 ### org.apache.ibatis
 
@@ -445,6 +459,22 @@ public class RoutingStatementHandler implements StatementHandler {
     // ...
 }
 ```
+
+#### SqlSource
+
+`SqlSource` 是 MyBatis 中非常核心的一个组件，因为它负责将动态 SQL 解析成静态 SQL。
+
+> Represents the content of a mapped statement read from an XML file or an annotation. It creates the SQL that will be passed to the database out of the input parameter received from the user.
+> 表示从XML文件或注释读取的 SQL 语句，它根据从用户收到的输入参数创建之后传递给数据库的SQL。
+
+**`getBoundSql(Object parameterObject)`**: 这个方法接受一个参数对象，并返回一个 `BoundSql` 对象。`BoundSql` 包含了生成的 SQL 语句以及相应的参数信息。
+
+MyBatis 提供了几个 `SqlSource` 的实现类，每个实现类适用于不同的场景：
+
+1. **`StaticSqlSource`**: 用于处理静态 SQL 语句，即没有动态部分的 SQL
+2. **`DynamicSqlSource`**: 用于处理动态 SQL 语句，通常包含 `<if>`, `<choose>`, `<when>`, `<otherwise>`, `<foreach>` 等动态标签
+3. **`RawSqlSource`**: 这个实现类主要用于解析包含 `#` 和 `$` 占位符的 SQL 语句，将其转换成 `StaticSqlSource` 或 `DynamicSqlSource`
+4. **`ProviderSqlSource`**: 用于处理通过 Java 方法提供的 SQL，通常使用 `@Provider` 注解
 
 #### ParameterHandler
 

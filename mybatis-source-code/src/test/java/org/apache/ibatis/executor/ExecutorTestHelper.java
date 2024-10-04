@@ -184,6 +184,7 @@ class ExecutorTestHelper {
                     }
                 }).build()).resultMaps(new ArrayList<>() {
             private static final long serialVersionUID = 1L;
+
             {
                 add(rm);
             }
@@ -373,7 +374,7 @@ class ExecutorTestHelper {
                 .statementType(StatementType.STATEMENT)
                 .parameterMap(
                         new ParameterMap.Builder(config, "defaultParameterMap", Author.class, new ArrayList<>()).build())
-                .resultMaps(new ArrayList<ResultMap>() {
+                .resultMaps(new ArrayList<>() {
                     private static final long serialVersionUID = 1L;
 
                     {
