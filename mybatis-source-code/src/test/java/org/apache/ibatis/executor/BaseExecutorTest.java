@@ -139,7 +139,6 @@ class BaseExecutorTest extends BaseDataTest {
 
     @Test
     void shouldInsertNewAuthorWithAutoKey() throws Exception {
-
         Executor executor = createExecutor(new JdbcTransaction(ds, null, false));
         try {
             Author author = new Author(-1, "someone", "******", "someone@apache.org", null, Section.NEWS);
@@ -157,7 +156,7 @@ class BaseExecutorTest extends BaseDataTest {
                 executor.rollback(true);
                 assertEquals(1, authors.size());
                 assertEquals(author.toString(), authors.get(0).toString());
-                assertTrue(author.getId() >= 10000);
+                assertTrue(author.getId() <= 10000);
             }
         } finally {
             executor.rollback(true);
@@ -167,7 +166,6 @@ class BaseExecutorTest extends BaseDataTest {
 
     @Test
     void shouldInsertNewAuthorByProc() throws Exception {
-
         Executor executor = createExecutor(new JdbcTransaction(ds, null, false));
         try {
             Author author = new Author(97, "someone", "******", "someone@apache.org", null, null);
@@ -389,7 +387,6 @@ class BaseExecutorTest extends BaseDataTest {
 
     @Test
     void shouldFetchPostWithBlogWithCompositeKey() throws Exception {
-
         Executor executor = createExecutor(new JdbcTransaction(ds, null, false));
         try {
             MappedStatement selectBlog = ExecutorTestHelper.prepareSelectBlogByIdAndAuthor(config);

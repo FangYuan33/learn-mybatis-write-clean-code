@@ -24,6 +24,8 @@ DROP PROCEDURE selectTwoSetsOfAuthors;
 DROP PROCEDURE insertAuthor;
 DROP PROCEDURE selectAuthorViaOutParams;
 
+-- !use!
+
 CREATE TABLE author
 (
     id                INT          NOT NULL AUTO_INCREMENT,

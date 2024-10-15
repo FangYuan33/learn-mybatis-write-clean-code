@@ -91,7 +91,7 @@ class ExecutorTestHelper {
                 new StaticSqlSource(config,
                         "INSERT INTO author (username,password,email,bio,favourite_section) values(?,?,?,?,?)"),
                 SqlCommandType.INSERT).parameterMap(
-                new ParameterMap.Builder(config, "defaultParameterMap", Author.class, new ArrayList<ParameterMapping>() {
+                new ParameterMap.Builder(config, "defaultParameterMap", Author.class, new ArrayList<>() {
                     private static final long serialVersionUID = 1L;
 
                     {

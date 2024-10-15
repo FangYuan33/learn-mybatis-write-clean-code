@@ -34,27 +34,28 @@ import org.apache.ibatis.session.Configuration;
  */
 public class RawSqlSource implements SqlSource {
 
-  private final SqlSource sqlSource;
+    private final SqlSource sqlSource;
 
-  public RawSqlSource(Configuration configuration, SqlNode rootSqlNode, Class<?> parameterType) {
-    this(configuration, getSql(configuration, rootSqlNode), parameterType);
-  }
+    public RawSqlSource(Configuration configuration, SqlNode rootSqlNode, Class<?> parameterType) {
+        this(configuration, getSql(configuration, rootSqlNode), parameterType);
+    }
 
-  public RawSqlSource(Configuration configuration, String sql, Class<?> parameterType) {
-    SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
-    Class<?> clazz = parameterType == null ? Object.class : parameterType;
-    sqlSource = sqlSourceParser.parse(sql, clazz, new HashMap<>());
-  }
+    public RawSqlSource(Configuration configuration, String sql, Class<?> parameterType) {
+        SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
+        Class<?> clazz = parameterType == null ? Object.class : parameterType;
+        // 静态 SQL 在此处被解析，包含 #{} 占位符的会被替换为 ?
+        sqlSource = sqlSourceParser.parse(sql, clazz, new HashMap<>());
+    }
 
-  private static String getSql(Configuration configuration, SqlNode rootSqlNode) {
-    DynamicContext context = new DynamicContext(configuration, null);
-    rootSqlNode.apply(context);
-    return context.getSql();
-  }
+    private static String getSql(Configuration configuration, SqlNode rootSqlNode) {
+        DynamicContext context = new DynamicContext(configuration, null);
+        rootSqlNode.apply(context);
+        return context.getSql();
+    }
 
-  @Override
-  public BoundSql getBoundSql(Object parameterObject) {
-    return sqlSource.getBoundSql(parameterObject);
-  }
+    @Override
+    public BoundSql getBoundSql(Object parameterObject) {
+        return sqlSource.getBoundSql(parameterObject);
+    }
 
 }

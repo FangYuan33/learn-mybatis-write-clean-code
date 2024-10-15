@@ -64,6 +64,22 @@
         </constructor>
     </resultMap>
 
+<!--    !use!-->
+    <select id="selectAuthor" parameterMap="selectAuthor" resultMap="selectAuthor">
+        select id, username, password, email, bio, favourite_section
+        from author where id = #{id,jdbcType=INTEGER, javaType=int}
+    </select>
+
+<!--    <select id="selectAuthor" parameterMap="selectAuthor" resultMap="selectAuthor">-->
+<!--        select id, username, password, email, bio, favourite_section-->
+<!--        from author-->
+<!--        <where>-->
+<!--            <if test="id != null">-->
+<!--                id = #{id}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+
     <select id="selectAllAuthors" resultType="org.apache.ibatis.domain.blog.Author">
         select * from author
     </select>
@@ -92,10 +108,7 @@
         select id, username from author where id = #{value}
     </select>
 
-    <select id="selectAuthor" parameterMap="selectAuthor" resultMap="selectAuthor">
-        select id, username, password, email, bio, favourite_section
-        from author where id = ?
-    </select>
+
 
     <select id="selectImmutableAuthor" parameterMap="selectAuthor"
         resultMap="selectImmutableAuthor">

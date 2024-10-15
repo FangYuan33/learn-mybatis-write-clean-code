@@ -50,7 +50,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
         int rows = ps.getUpdateCount();
         Object parameterObject = boundSql.getParameterObject();
         KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
-        // todo 这里是不是能对 key 做执行完 SQL 的处理
+        // 指定 key generator 在这里对未指定主键值并自增的插入后为参数赋值
         keyGenerator.processAfter(executor, mappedStatement, ps, parameterObject);
         return rows;
     }

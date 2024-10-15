@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mybatis.book</groupId>
-    <artifactId>book-mybatis</artifactId>
+    <artifactId>learn-mybatis-write-clean-code</artifactId>
     <packaging>pom</packaging>
     <modules>
         <!-- 源码 -->
