@@ -41,6 +41,8 @@ public interface AuthorMapper {
 
   Author selectAuthor(int id);
 
+  Author selectAuthorDynamic(Integer id);
+
   LinkedHashMap<String, Object> selectAuthorLinkedHashMap(int id);
 
   void selectAuthor(int id, ResultHandler handler);

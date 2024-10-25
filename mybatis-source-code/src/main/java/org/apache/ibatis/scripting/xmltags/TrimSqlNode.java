@@ -29,131 +29,131 @@ import org.apache.ibatis.session.Configuration;
  */
 public class TrimSqlNode implements SqlNode {
 
-  private final SqlNode contents;
-  private final String prefix;
-  private final String suffix;
-  private final List<String> prefixesToOverride;
-  private final List<String> suffixesToOverride;
-  private final Configuration configuration;
+    private final SqlNode contents;
+    private final String prefix;
+    private final String suffix;
+    private final List<String> prefixesToOverride;
+    private final List<String> suffixesToOverride;
+    private final Configuration configuration;
 
-  public TrimSqlNode(Configuration configuration, SqlNode contents, String prefix, String prefixesToOverride,
-      String suffix, String suffixesToOverride) {
-    this(configuration, contents, prefix, parseOverrides(prefixesToOverride), suffix,
-        parseOverrides(suffixesToOverride));
-  }
-
-  protected TrimSqlNode(Configuration configuration, SqlNode contents, String prefix, List<String> prefixesToOverride,
-      String suffix, List<String> suffixesToOverride) {
-    this.contents = contents;
-    this.prefix = prefix;
-    this.prefixesToOverride = prefixesToOverride;
-    this.suffix = suffix;
-    this.suffixesToOverride = suffixesToOverride;
-    this.configuration = configuration;
-  }
-
-  @Override
-  public boolean apply(DynamicContext context) {
-    FilteredDynamicContext filteredDynamicContext = new FilteredDynamicContext(context);
-    boolean result = contents.apply(filteredDynamicContext);
-    filteredDynamicContext.applyAll();
-    return result;
-  }
-
-  private static List<String> parseOverrides(String overrides) {
-    if (overrides != null) {
-      final StringTokenizer parser = new StringTokenizer(overrides, "|", false);
-      final List<String> list = new ArrayList<>(parser.countTokens());
-      while (parser.hasMoreTokens()) {
-        list.add(parser.nextToken().toUpperCase(Locale.ENGLISH));
-      }
-      return list;
-    }
-    return Collections.emptyList();
-  }
-
-  private class FilteredDynamicContext extends DynamicContext {
-    private final DynamicContext delegate;
-    private boolean prefixApplied;
-    private boolean suffixApplied;
-    private StringBuilder sqlBuffer;
-
-    public FilteredDynamicContext(DynamicContext delegate) {
-      super(configuration, null);
-      this.delegate = delegate;
-      this.prefixApplied = false;
-      this.suffixApplied = false;
-      this.sqlBuffer = new StringBuilder();
+    public TrimSqlNode(Configuration configuration, SqlNode contents, String prefix, String prefixesToOverride,
+                       String suffix, String suffixesToOverride) {
+        this(configuration, contents, prefix, parseOverrides(prefixesToOverride), suffix,
+                parseOverrides(suffixesToOverride));
     }
 
-    public void applyAll() {
-      sqlBuffer = new StringBuilder(sqlBuffer.toString().trim());
-      String trimmedUppercaseSql = sqlBuffer.toString().toUpperCase(Locale.ENGLISH);
-      if (trimmedUppercaseSql.length() > 0) {
-        applyPrefix(sqlBuffer, trimmedUppercaseSql);
-        applySuffix(sqlBuffer, trimmedUppercaseSql);
-      }
-      delegate.appendSql(sqlBuffer.toString());
+    protected TrimSqlNode(Configuration configuration, SqlNode contents, String prefix, List<String> prefixesToOverride,
+                          String suffix, List<String> suffixesToOverride) {
+        this.contents = contents;
+        this.prefix = prefix;
+        this.prefixesToOverride = prefixesToOverride;
+        this.suffix = suffix;
+        this.suffixesToOverride = suffixesToOverride;
+        this.configuration = configuration;
     }
 
     @Override
-    public Map<String, Object> getBindings() {
-      return delegate.getBindings();
+    public boolean apply(DynamicContext context) {
+        FilteredDynamicContext filteredDynamicContext = new FilteredDynamicContext(context);
+        boolean result = contents.apply(filteredDynamicContext);
+        filteredDynamicContext.applyAll();
+        return result;
     }
 
-    @Override
-    public void bind(String name, Object value) {
-      delegate.bind(name, value);
+    private static List<String> parseOverrides(String overrides) {
+        if (overrides != null) {
+            final StringTokenizer parser = new StringTokenizer(overrides, "|", false);
+            final List<String> list = new ArrayList<>(parser.countTokens());
+            while (parser.hasMoreTokens()) {
+                list.add(parser.nextToken().toUpperCase(Locale.ENGLISH));
+            }
+            return list;
+        }
+        return Collections.emptyList();
     }
 
-    @Override
-    public int getUniqueNumber() {
-      return delegate.getUniqueNumber();
-    }
+    private class FilteredDynamicContext extends DynamicContext {
+        private final DynamicContext delegate;
+        private boolean prefixApplied;
+        private boolean suffixApplied;
+        private StringBuilder sqlBuffer;
 
-    @Override
-    public void appendSql(String sql) {
-      sqlBuffer.append(sql);
-    }
+        public FilteredDynamicContext(DynamicContext delegate) {
+            super(configuration, null);
+            this.delegate = delegate;
+            this.prefixApplied = false;
+            this.suffixApplied = false;
+            this.sqlBuffer = new StringBuilder();
+        }
 
-    @Override
-    public String getSql() {
-      return delegate.getSql();
-    }
+        public void applyAll() {
+            sqlBuffer = new StringBuilder(sqlBuffer.toString().trim());
+            String trimmedUppercaseSql = sqlBuffer.toString().toUpperCase(Locale.ENGLISH);
+            if (trimmedUppercaseSql.length() > 0) {
+                applyPrefix(sqlBuffer, trimmedUppercaseSql);
+                applySuffix(sqlBuffer, trimmedUppercaseSql);
+            }
+            delegate.appendSql(sqlBuffer.toString());
+        }
 
-    private void applyPrefix(StringBuilder sql, String trimmedUppercaseSql) {
-      if (prefixApplied) {
-        return;
-      }
-      prefixApplied = true;
-      if (prefixesToOverride != null) {
-        prefixesToOverride.stream().filter(trimmedUppercaseSql::startsWith).findFirst()
-            .ifPresent(toRemove -> sql.delete(0, toRemove.trim().length()));
-      }
-      if (prefix != null) {
-        sql.insert(0, " ").insert(0, prefix);
-      }
-    }
+        @Override
+        public Map<String, Object> getBindings() {
+            return delegate.getBindings();
+        }
 
-    private void applySuffix(StringBuilder sql, String trimmedUppercaseSql) {
-      if (suffixApplied) {
-        return;
-      }
-      suffixApplied = true;
-      if (suffixesToOverride != null) {
-        suffixesToOverride.stream()
-            .filter(toRemove -> trimmedUppercaseSql.endsWith(toRemove) || trimmedUppercaseSql.endsWith(toRemove.trim()))
-            .findFirst().ifPresent(toRemove -> {
-              int start = sql.length() - toRemove.trim().length();
-              int end = sql.length();
-              sql.delete(start, end);
-            });
-      }
-      if (suffix != null) {
-        sql.append(" ").append(suffix);
-      }
-    }
+        @Override
+        public void bind(String name, Object value) {
+            delegate.bind(name, value);
+        }
 
-  }
+        @Override
+        public int getUniqueNumber() {
+            return delegate.getUniqueNumber();
+        }
+
+        @Override
+        public void appendSql(String sql) {
+            sqlBuffer.append(sql);
+        }
+
+        @Override
+        public String getSql() {
+            return delegate.getSql();
+        }
+
+        private void applyPrefix(StringBuilder sql, String trimmedUppercaseSql) {
+            if (prefixApplied) {
+                return;
+            }
+            prefixApplied = true;
+            if (prefixesToOverride != null) {
+                prefixesToOverride.stream().filter(trimmedUppercaseSql::startsWith).findFirst()
+                        .ifPresent(toRemove -> sql.delete(0, toRemove.trim().length()));
+            }
+            if (prefix != null) {
+                sql.insert(0, " ").insert(0, prefix);
+            }
+        }
+
+        private void applySuffix(StringBuilder sql, String trimmedUppercaseSql) {
+            if (suffixApplied) {
+                return;
+            }
+            suffixApplied = true;
+            if (suffixesToOverride != null) {
+                suffixesToOverride.stream()
+                        .filter(toRemove -> trimmedUppercaseSql.endsWith(toRemove) || trimmedUppercaseSql.endsWith(toRemove.trim()))
+                        .findFirst().ifPresent(toRemove -> {
+                            int start = sql.length() - toRemove.trim().length();
+                            int end = sql.length();
+                            sql.delete(start, end);
+                        });
+            }
+            if (suffix != null) {
+                sql.append(" ").append(suffix);
+            }
+        }
+
+    }
 
 }

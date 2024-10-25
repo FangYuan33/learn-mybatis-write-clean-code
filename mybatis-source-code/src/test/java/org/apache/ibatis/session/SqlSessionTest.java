@@ -69,12 +69,22 @@ class SqlSessionTest extends BaseDataTest {
         sqlMapper = new SqlSessionFactoryBuilder().build(reader);
     }
 
-//    !use!
+    //    !use!
     @Test
     void shouldExecuteSelectOneAuthorUsingMapperClass() {
         try (SqlSession session = sqlMapper.openSession()) {
             AuthorMapper mapper = session.getMapper(AuthorMapper.class);
             Author author = mapper.selectAuthor(101);
+            assertEquals(101, author.getId());
+        }
+    }
+
+    //    !use!
+    @Test
+    void dynamicSqlParse() {
+        try (SqlSession session = sqlMapper.openSession()) {
+            AuthorMapper mapper = session.getMapper(AuthorMapper.class);
+            Author author = mapper.selectAuthorDynamic(101);
             assertEquals(101, author.getId());
         }
     }

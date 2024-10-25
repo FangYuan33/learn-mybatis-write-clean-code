@@ -25,10 +25,10 @@ import org.apache.ibatis.session.Configuration;
  */
 public class SetSqlNode extends TrimSqlNode {
 
-  private static final List<String> COMMA = Collections.singletonList(",");
+    private static final List<String> COMMA = Collections.singletonList(",");
 
-  public SetSqlNode(Configuration configuration, SqlNode contents) {
-    super(configuration, contents, "SET", COMMA, null, COMMA);
-  }
+    public SetSqlNode(Configuration configuration, SqlNode contents) {
+        super(configuration, contents, "SET", COMMA, null, COMMA);
+    }
 
 }

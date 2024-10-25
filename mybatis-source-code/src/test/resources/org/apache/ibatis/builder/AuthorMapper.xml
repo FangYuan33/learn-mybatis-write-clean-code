@@ -64,21 +64,21 @@
         </constructor>
     </resultMap>
 
-<!--    !use!-->
+    <!--    !use!-->
     <select id="selectAuthor" parameterMap="selectAuthor" resultMap="selectAuthor">
         select id, username, password, email, bio, favourite_section
         from author where id = #{id,jdbcType=INTEGER, javaType=int}
     </select>
-
-<!--    <select id="selectAuthor" parameterMap="selectAuthor" resultMap="selectAuthor">-->
-<!--        select id, username, password, email, bio, favourite_section-->
-<!--        from author-->
-<!--        <where>-->
-<!--            <if test="id != null">-->
-<!--                id = #{id}-->
-<!--            </if>-->
-<!--        </where>-->
-<!--    </select>-->
+    <!--    !use!-->
+    <select id="selectAuthorDynamic" parameterMap="selectAuthor" resultMap="selectAuthor">
+        select id, username, password, email, bio, favourite_section
+        from author
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+        </where>
+    </select>
 
     <select id="selectAllAuthors" resultType="org.apache.ibatis.domain.blog.Author">
         select * from author
