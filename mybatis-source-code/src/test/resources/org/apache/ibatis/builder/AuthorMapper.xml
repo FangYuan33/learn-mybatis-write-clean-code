@@ -157,4 +157,5 @@
         select * from author
     </select>
 
+    <cache/>
 </mapper>

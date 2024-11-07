@@ -80,7 +80,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         try {
-            // 是否为 Object 类的方法，如果是直接执行
+            // 是否为 Object 类的方法，如果是直接执行，不做代理相关逻辑
             if (Object.class.equals(method.getDeclaringClass())) {
                 return method.invoke(this, args);
             }
@@ -94,9 +94,13 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     private MapperMethodInvoker cachedInvoker(Method method) throws Throwable {
         try {
             return MapUtil.computeIfAbsent(methodCache, method, m -> {
+                // mapper 中声明的 SQL 执行方法均为非default方法
                 if (!m.isDefault()) {
                     return new PlainMethodInvoker(new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
                 }
+
+                // default 方法：声明在 interface 中，使用 default 标记，并提供了默认实现
+                // default 方法使用 DefaultMethodInvoker 执行，了解即可
                 try {
                     if (privateLookupInMethod == null) {
                         return new DefaultMethodInvoker(getMethodHandleJava8(method));
@@ -132,6 +136,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
 
     private static class PlainMethodInvoker implements MapperMethodInvoker {
+
         private final MapperMethod mapperMethod;
 
         public PlainMethodInvoker(MapperMethod mapperMethod) {
@@ -145,6 +150,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
 
     private static class DefaultMethodInvoker implements MapperMethodInvoker {
+
         private final MethodHandle methodHandle;
 
         public DefaultMethodInvoker(MethodHandle methodHandle) {

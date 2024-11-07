@@ -39,6 +39,7 @@ import org.apache.ibatis.transaction.Transaction;
 public class CachingExecutor implements Executor {
 
     private final Executor delegate;
+
     private final TransactionalCacheManager tcm = new TransactionalCacheManager();
 
     public CachingExecutor(Executor delegate) {
@@ -93,6 +94,7 @@ public class CachingExecutor implements Executor {
     @Override
     public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler,
                              CacheKey key, BoundSql boundSql) throws SQLException {
+        // 二级缓存相关逻辑
         Cache cache = ms.getCache();
         if (cache != null) {
             flushCacheIfRequired(ms);
@@ -107,7 +109,15 @@ public class CachingExecutor implements Executor {
                 return list;
             }
         }
+        // 查询逻辑
         return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+    }
+
+    private void flushCacheIfRequired(MappedStatement ms) {
+        Cache cache = ms.getCache();
+        if (cache != null && ms.isFlushCacheRequired()) {
+            tcm.clear(cache);
+        }
     }
 
     @Override
@@ -163,13 +173,6 @@ public class CachingExecutor implements Executor {
     @Override
     public void clearLocalCache() {
         delegate.clearLocalCache();
-    }
-
-    private void flushCacheIfRequired(MappedStatement ms) {
-        Cache cache = ms.getCache();
-        if (cache != null && ms.isFlushCacheRequired()) {
-            tcm.clear(cache);
-        }
     }
 
     @Override

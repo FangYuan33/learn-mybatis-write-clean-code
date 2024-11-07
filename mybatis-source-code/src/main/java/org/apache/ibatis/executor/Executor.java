@@ -61,7 +61,7 @@ public interface Executor {
     // 该方法用于检查某个查询结果是否已经缓存在本地
     boolean isCached(MappedStatement ms, CacheKey key);
 
-    // 该方法用于清空本地缓存
+    // 该方法用于清空一级缓存
     void clearLocalCache();
 
     // 该方法用于延迟加载属性

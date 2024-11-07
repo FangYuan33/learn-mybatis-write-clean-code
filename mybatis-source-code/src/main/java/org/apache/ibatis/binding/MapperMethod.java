@@ -46,9 +46,9 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class MapperMethod {
 
-    // 用于记录 SQL 类型: 增删改查
+    // 主要用于记录 SQL 类型： SELECT、INSERT、DELETE 和 UPDATE 等
     private final SqlCommand command;
-    // 方法签名，记录返回值类型等信息
+    // 记录返回值等信息
     private final MethodSignature method;
 
     public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
@@ -218,7 +218,9 @@ public class MapperMethod {
 
     public static class SqlCommand {
 
+        // eg: org.apache.ibatis.domain.blog.mappers.AuthorMapper.selectAuthor
         private final String name;
+        // eg: SELECT
         private final SqlCommandType type;
 
         public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
@@ -272,15 +274,30 @@ public class MapperMethod {
 
     public static class MethodSignature {
 
+        // 结果是否返回一个集合
         private final boolean returnsMany;
-        private final boolean returnsMap;
-        private final boolean returnsVoid;
-        private final boolean returnsCursor;
-        private final boolean returnsOptional;
-        private final Class<?> returnType;
+        // 返回值是否使用了 org.apache.ibatis.annotations.MapKey 注解，标记了作为 Map 的 key 的值
+        // 使用方法详见注解的注释内容
         private final String mapKey;
+        // 结果是否返回 Map
+        private final boolean returnsMap;
+        // 结果是否返回 void
+        private final boolean returnsVoid;
+        // 结果是否返回 cursor
+        private final boolean returnsCursor;
+        // 结果是否返回 optional
+        private final boolean returnsOptional;
+        // 返回值类型
+        private final Class<?> returnType;
+        // resultHandler 在参数中的索引值，无则为 null
         private final Integer resultHandlerIndex;
+        // rowBounds 用于分页的参数对象的索引值，无则为 null
         private final Integer rowBoundsIndex;
+        // 用于解析方法参数名称的工具，它用于处理方法参数的名称，以便在执行 SQL 语句时正确地将参数传递给 SQL 语句，常见的 @Param 注解便在这里生效
+        // 该工具类中的注释描述也很清楚，如下
+        // aMethod(@Param("M") int a, @Param("N") int b) -> {{0, "M"}, {1, "N"}}
+        // aMethod(int a, int b) -> {{0, "0"}, {1, "1"}}
+        // aMethod(int a, RowBounds rb, int b) -> {{0, "0"}, {2, "1"}}
         private final ParamNameResolver paramNameResolver;
 
         public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {

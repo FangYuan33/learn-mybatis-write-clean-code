@@ -20,16 +20,16 @@ package org.apache.ibatis.mapping;
  */
 public enum SqlCommandType {
 
-  UNKNOWN,
+    UNKNOWN,
 
-  INSERT,
+    INSERT,
 
-  UPDATE,
+    UPDATE,
 
-  DELETE,
+    DELETE,
 
-  SELECT,
+    SELECT,
 
-  FLUSH
+    FLUSH
 
 }

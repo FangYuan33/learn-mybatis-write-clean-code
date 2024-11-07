@@ -34,6 +34,7 @@ import org.apache.ibatis.session.SqlSession;
 public class MapperRegistry {
 
     private final Configuration config;
+    // 所有的 Mapper 对应的 MapperProxyFactory 已经在 Mybatis 配置加载时初始化好了（对应 mybatis.xml 配置文件中的 <mappers> 标签）
     private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new ConcurrentHashMap<>();
 
     public MapperRegistry(Configuration config) {

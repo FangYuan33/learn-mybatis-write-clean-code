@@ -31,99 +31,99 @@ import org.apache.ibatis.cache.Cache;
  * @author Clinton Begin
  */
 public class SoftCache implements Cache {
-  private final Deque<Object> hardLinksToAvoidGarbageCollection;
-  private final ReferenceQueue<Object> queueOfGarbageCollectedEntries;
-  private final Cache delegate;
-  private int numberOfHardLinks;
-  private final ReentrantLock lock = new ReentrantLock();
+    private final Deque<Object> hardLinksToAvoidGarbageCollection;
+    private final ReferenceQueue<Object> queueOfGarbageCollectedEntries;
+    private final Cache delegate;
+    private int numberOfHardLinks;
+    private final ReentrantLock lock = new ReentrantLock();
 
-  public SoftCache(Cache delegate) {
-    this.delegate = delegate;
-    this.numberOfHardLinks = 256;
-    this.hardLinksToAvoidGarbageCollection = new LinkedList<>();
-    this.queueOfGarbageCollectedEntries = new ReferenceQueue<>();
-  }
+    public SoftCache(Cache delegate) {
+        this.delegate = delegate;
+        this.numberOfHardLinks = 256;
+        this.hardLinksToAvoidGarbageCollection = new LinkedList<>();
+        this.queueOfGarbageCollectedEntries = new ReferenceQueue<>();
+    }
 
-  @Override
-  public String getId() {
-    return delegate.getId();
-  }
+    @Override
+    public String getId() {
+        return delegate.getId();
+    }
 
-  @Override
-  public int getSize() {
-    removeGarbageCollectedItems();
-    return delegate.getSize();
-  }
+    @Override
+    public int getSize() {
+        removeGarbageCollectedItems();
+        return delegate.getSize();
+    }
 
-  public void setSize(int size) {
-    this.numberOfHardLinks = size;
-  }
+    public void setSize(int size) {
+        this.numberOfHardLinks = size;
+    }
 
-  @Override
-  public void putObject(Object key, Object value) {
-    removeGarbageCollectedItems();
-    delegate.putObject(key, new SoftEntry(key, value, queueOfGarbageCollectedEntries));
-  }
+    @Override
+    public void putObject(Object key, Object value) {
+        removeGarbageCollectedItems();
+        delegate.putObject(key, new SoftEntry(key, value, queueOfGarbageCollectedEntries));
+    }
 
-  @Override
-  public Object getObject(Object key) {
-    Object result = null;
-    @SuppressWarnings("unchecked") // assumed delegate cache is totally managed by this cache
-    SoftReference<Object> softReference = (SoftReference<Object>) delegate.getObject(key);
-    if (softReference != null) {
-      result = softReference.get();
-      if (result == null) {
-        delegate.removeObject(key);
-      } else {
-        // See #586 (and #335) modifications need more than a read lock
+    @Override
+    public Object getObject(Object key) {
+        Object result = null;
+        @SuppressWarnings("unchecked") // assumed delegate cache is totally managed by this cache
+        SoftReference<Object> softReference = (SoftReference<Object>) delegate.getObject(key);
+        if (softReference != null) {
+            result = softReference.get();
+            if (result == null) {
+                delegate.removeObject(key);
+            } else {
+                // See #586 (and #335) modifications need more than a read lock
+                lock.lock();
+                try {
+                    hardLinksToAvoidGarbageCollection.addFirst(result);
+                    if (hardLinksToAvoidGarbageCollection.size() > numberOfHardLinks) {
+                        hardLinksToAvoidGarbageCollection.removeLast();
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Object removeObject(Object key) {
+        removeGarbageCollectedItems();
+        @SuppressWarnings("unchecked")
+        SoftReference<Object> softReference = (SoftReference<Object>) delegate.removeObject(key);
+        return softReference == null ? null : softReference.get();
+    }
+
+    @Override
+    public void clear() {
         lock.lock();
         try {
-          hardLinksToAvoidGarbageCollection.addFirst(result);
-          if (hardLinksToAvoidGarbageCollection.size() > numberOfHardLinks) {
-            hardLinksToAvoidGarbageCollection.removeLast();
-          }
+            hardLinksToAvoidGarbageCollection.clear();
         } finally {
-          lock.unlock();
+            lock.unlock();
         }
-      }
+        removeGarbageCollectedItems();
+        delegate.clear();
     }
-    return result;
-  }
 
-  @Override
-  public Object removeObject(Object key) {
-    removeGarbageCollectedItems();
-    @SuppressWarnings("unchecked")
-    SoftReference<Object> softReference = (SoftReference<Object>) delegate.removeObject(key);
-    return softReference == null ? null : softReference.get();
-  }
-
-  @Override
-  public void clear() {
-    lock.lock();
-    try {
-      hardLinksToAvoidGarbageCollection.clear();
-    } finally {
-      lock.unlock();
+    private void removeGarbageCollectedItems() {
+        SoftEntry sv;
+        while ((sv = (SoftEntry) queueOfGarbageCollectedEntries.poll()) != null) {
+            delegate.removeObject(sv.key);
+        }
     }
-    removeGarbageCollectedItems();
-    delegate.clear();
-  }
 
-  private void removeGarbageCollectedItems() {
-    SoftEntry sv;
-    while ((sv = (SoftEntry) queueOfGarbageCollectedEntries.poll()) != null) {
-      delegate.removeObject(sv.key);
+    private static class SoftEntry extends SoftReference<Object> {
+        private final Object key;
+
+        SoftEntry(Object key, Object value, ReferenceQueue<Object> garbageCollectionQueue) {
+            super(value, garbageCollectionQueue);
+            this.key = key;
+        }
     }
-  }
-
-  private static class SoftEntry extends SoftReference<Object> {
-    private final Object key;
-
-    SoftEntry(Object key, Object value, ReferenceQueue<Object> garbageCollectionQueue) {
-      super(value, garbageCollectionQueue);
-      this.key = key;
-    }
-  }
 
 }

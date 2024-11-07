@@ -115,7 +115,9 @@ public class XMLMapperBuilder extends BaseBuilder {
                 throw new BuilderException("Mapper's namespace cannot be empty");
             }
             builderAssistant.setCurrentNamespace(namespace);
+            // 若想要在多个命名空间中共享相同的缓存配置和实例，可以使用 cache-ref 元素来引用另一个缓存
             cacheRefElement(context.evalNode("cache-ref"));
+            // 配置二级缓存
             cacheElement(context.evalNode("cache"));
             parameterMapElement(context.evalNodes("/mapper/parameterMap"));
             resultMapElements(context.evalNodes("/mapper/resultMap"));
@@ -161,15 +163,22 @@ public class XMLMapperBuilder extends BaseBuilder {
 
     private void cacheElement(XNode context) {
         if (context != null) {
+            // 二级缓存实现类，默认 PerpetualCache，我们在一级缓存也提到过
             String type = context.getStringAttribute("type", "PERPETUAL");
             Class<? extends Cache> typeClass = typeAliasRegistry.resolveAlias(type);
+            // 缓存清除策略，默认 LRU
             String eviction = context.getStringAttribute("eviction", "LRU");
             Class<? extends Cache> evictionClass = typeAliasRegistry.resolveAlias(eviction);
+            // 定时清除间隔
             Long flushInterval = context.getLongAttribute("flushInterval");
+            // 缓存引用数量
             Integer size = context.getIntAttribute("size");
+            // readOnly上文我们提到过，默认 false
             boolean readWrite = !context.getBooleanAttribute("readOnly", false);
+            // blocking 默认 false
             boolean blocking = context.getBooleanAttribute("blocking", false);
             Properties props = context.getChildrenAsProperties();
+            // 创建缓存对象
             builderAssistant.useNewCache(typeClass, evictionClass, flushInterval, size, readWrite, blocking, props);
         }
     }

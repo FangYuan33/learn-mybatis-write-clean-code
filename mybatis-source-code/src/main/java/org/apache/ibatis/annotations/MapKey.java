@@ -40,10 +40,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface MapKey {
-  /**
-   * Returns the property name(or column name) for a key value of {@link java.util.Map}.
-   *
-   * @return the property name(or column name)
-   */
-  String value();
+    /**
+     * Returns the property name(or column name) for a key value of {@link java.util.Map}.
+     *
+     * @return the property name(or column name)
+     */
+    String value();
 }

@@ -33,26 +33,26 @@ import org.apache.ibatis.transaction.TransactionFactory;
  */
 public class JdbcTransactionFactory implements TransactionFactory {
 
-  private boolean skipSetAutoCommitOnClose;
+    private boolean skipSetAutoCommitOnClose;
 
-  @Override
-  public void setProperties(Properties props) {
-    if (props == null) {
-      return;
+    @Override
+    public void setProperties(Properties props) {
+        if (props == null) {
+            return;
+        }
+        String value = props.getProperty("skipSetAutoCommitOnClose");
+        if (value != null) {
+            skipSetAutoCommitOnClose = Boolean.parseBoolean(value);
+        }
     }
-    String value = props.getProperty("skipSetAutoCommitOnClose");
-    if (value != null) {
-      skipSetAutoCommitOnClose = Boolean.parseBoolean(value);
+
+    @Override
+    public Transaction newTransaction(Connection conn) {
+        return new JdbcTransaction(conn);
     }
-  }
 
-  @Override
-  public Transaction newTransaction(Connection conn) {
-    return new JdbcTransaction(conn);
-  }
-
-  @Override
-  public Transaction newTransaction(DataSource ds, TransactionIsolationLevel level, boolean autoCommit) {
-    return new JdbcTransaction(ds, level, autoCommit, skipSetAutoCommitOnClose);
-  }
+    @Override
+    public Transaction newTransaction(DataSource ds, TransactionIsolationLevel level, boolean autoCommit) {
+        return new JdbcTransaction(ds, level, autoCommit, skipSetAutoCommitOnClose);
+    }
 }

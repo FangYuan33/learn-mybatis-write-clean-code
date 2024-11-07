@@ -51,16 +51,24 @@ public abstract class BaseExecutor implements Executor {
 
     private static final Log log = LogFactory.getLog(BaseExecutor.class);
 
+    // 事务管理
     protected Transaction transaction;
+    // 装饰器模式
     protected Executor wrapper;
-
-    protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+    // 一级缓存
     protected PerpetualCache localCache;
+    // 用于缓存存储过程的输出参数
     protected PerpetualCache localOutputParameterCache;
+
     protected Configuration configuration;
 
+    // 查询嵌套层级
     protected int queryStack;
+    // Executor closed 标志位
     private boolean closed;
+
+    // 用于处理延迟加载的属性
+    protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
 
     protected BaseExecutor(Configuration configuration, Transaction transaction) {
         this.transaction = transaction;
@@ -154,6 +162,7 @@ public abstract class BaseExecutor implements Executor {
         List<E> list;
         try {
             queryStack++;
+            // 一级缓存
             list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
             if (list != null) {
                 handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
@@ -335,15 +344,15 @@ public abstract class BaseExecutor implements Executor {
     private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds,
                                           ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
         List<E> list;
-        // 本地缓存占位
+        // 一级缓存占位
         localCache.putObject(key, EXECUTION_PLACEHOLDER);
         try {
             list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
         } finally {
-            // 查询完成后清除本地缓存
+            // 查询完成后清除一级缓存
             localCache.removeObject(key);
         }
-        // 添加到本地缓存中
+        // 添加到一级缓存中
         localCache.putObject(key, list);
         if (ms.getStatementType() == StatementType.CALLABLE) {
             localOutputParameterCache.putObject(key, parameter);

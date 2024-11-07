@@ -123,9 +123,12 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     public Cache useNewCache(Class<? extends Cache> typeClass, Class<? extends Cache> evictionClass, Long flushInterval,
                              Integer size, boolean readWrite, boolean blocking, Properties props) {
+        // 建造者模式，将标签属性赋值
         Cache cache = new CacheBuilder(currentNamespace).implementation(valueOrDefault(typeClass, PerpetualCache.class))
                 .addDecorator(valueOrDefault(evictionClass, LruCache.class)).clearInterval(flushInterval).size(size)
                 .readWrite(readWrite).blocking(blocking).properties(props).build();
+
+        // 添加到全局配置中
         configuration.addCache(cache);
         currentCache = cache;
         return cache;
