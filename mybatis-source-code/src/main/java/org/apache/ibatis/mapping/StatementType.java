@@ -20,10 +20,10 @@ package org.apache.ibatis.mapping;
  */
 public enum StatementType {
 
-  STATEMENT,
+    STATEMENT,
 
-  PREPARED,
+    PREPARED,
 
-  CALLABLE
+    CALLABLE
 
 }

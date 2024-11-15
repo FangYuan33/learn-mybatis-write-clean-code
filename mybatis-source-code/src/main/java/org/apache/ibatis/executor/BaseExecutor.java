@@ -156,18 +156,20 @@ public abstract class BaseExecutor implements Executor {
         if (closed) {
             throw new ExecutorException("Executor was closed.");
         }
+        // 判断是否刷新本地缓存
         if (queryStack == 0 && ms.isFlushCacheRequired()) {
             clearLocalCache();
         }
         List<E> list;
         try {
             queryStack++;
-            // 一级缓存
+            // 判断一级缓存是否存在，存在则直接作为结果返回，否则查询数据库
             list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
             if (list != null) {
+                // 存储过程相关逻辑
                 handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
             } else {
-                // query form db
+                // 未命中一级缓存，查询数据库
                 list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
             }
         } finally {
@@ -354,6 +356,7 @@ public abstract class BaseExecutor implements Executor {
         }
         // 添加到一级缓存中
         localCache.putObject(key, list);
+        // 存储过程相关逻辑
         if (ms.getStatementType() == StatementType.CALLABLE) {
             localOutputParameterCache.putObject(key, parameter);
         }
