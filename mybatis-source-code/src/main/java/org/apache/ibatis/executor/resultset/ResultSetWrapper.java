@@ -172,6 +172,7 @@ public class ResultSetWrapper {
     public List<String> getUnmappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
         List<String> unMappedColumnNames = unMappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
         if (unMappedColumnNames == null) {
+            // 获取没有被映射的列名
             loadMappedAndUnmappedColumnNames(resultMap, columnPrefix);
             unMappedColumnNames = unMappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
         }

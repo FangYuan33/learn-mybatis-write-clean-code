@@ -61,6 +61,7 @@ public class DefaultParameterHandler implements ParameterHandler {
     @Override
     public void setParameters(PreparedStatement ps) {
         ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
+        // 获取参数映射，以便处理用户传入的参数
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
         if (parameterMappings != null) {
             MetaObject metaObject = null;
@@ -74,8 +75,10 @@ public class DefaultParameterHandler implements ParameterHandler {
                     } else if (parameterObject == null) {
                         value = null;
                     } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+                        // 已定义类型处理器，这些类型能直接取对应值
                         value = parameterObject;
                     } else {
+                        // 使用反射，根据参数映射中定义的字段值获取对应的参数值
                         if (metaObject == null) {
                             metaObject = configuration.newMetaObject(parameterObject);
                         }
@@ -87,6 +90,7 @@ public class DefaultParameterHandler implements ParameterHandler {
                         jdbcType = configuration.getJdbcTypeForNull();
                     }
                     try {
+                        // 将对应的参数值设置到对应的占位符顺序上
                         typeHandler.setParameter(ps, i + 1, value, jdbcType);
                     } catch (TypeException | SQLException e) {
                         throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);

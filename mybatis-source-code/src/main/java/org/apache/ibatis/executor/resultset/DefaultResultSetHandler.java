@@ -192,8 +192,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         final List<Object> multipleResults = new ArrayList<>();
 
         int resultSetCount = 0;
+        // 获取 java.sql.ResultSet 对象，它是数据库查询的结果集
         ResultSetWrapper rsw = getFirstResultSet(stmt);
-
+        // resultMap 当然是我们在 Mapper.xml 中定义的结果映射集
         List<ResultMap> resultMaps = mappedStatement.getResultMaps();
         int resultMapCount = resultMaps.size();
         validateResultMapsCount(rsw, resultMapCount);
@@ -361,12 +362,34 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         DefaultResultContext<Object> resultContext = new DefaultResultContext<>();
         ResultSet resultSet = rsw.getResultSet();
         skipRows(resultSet, rowBounds);
+        // 逐个按行解析成 Java 对象
         while (shouldProcessMoreRows(resultContext, rowBounds) && !resultSet.isClosed() && resultSet.next()) {
-            // 定义的 resultMap 映射 Java 对象和数据库数据
             ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(resultSet, resultMap, null);
             Object rowValue = getRowValue(rsw, discriminatedResultMap, null);
             storeObject(resultHandler, resultContext, rowValue, parentMapping, resultSet);
         }
+    }
+
+    private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap, String columnPrefix) throws SQLException {
+        final ResultLoaderMap lazyLoader = new ResultLoaderMap();
+        // 根据返回值对象类型调用其构造方法，该结果中所有字段未生成值
+        Object rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
+        if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+            // 元对象
+            final MetaObject metaObject = configuration.newMetaObject(rowValue);
+            boolean foundValues = this.useConstructorMappings;
+            // 根据配置信息是否处理自动字段和列的映射，默认为 ture
+            if (shouldApplyAutomaticMappings(resultMap, false)) {
+                // 在这里处理 result map 中没用定义的字段和列关系的映射
+                // 在 Mybatis 框架下默认情况下，只有字段值和数据库列相同才能完成映射，如果想将数据库列转换成驼峰式的 Java 字段定义，需要配置 mapUnderscoreToCamelCase 为 true
+                foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
+            }
+            // 根据 result mapping 中配置的字段和数据库列的映射关系，从 resultSet 中取值后封装给 metaObject
+            foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
+            foundValues = lazyLoader.size() > 0 || foundValues;
+            rowValue = foundValues || configuration.isReturnInstanceForEmptyRow() ? rowValue : null;
+        }
+        return rowValue;
     }
 
     private void storeObject(ResultHandler<?> resultHandler, DefaultResultContext<Object> resultContext, Object rowValue,
@@ -401,31 +424,6 @@ public class DefaultResultSetHandler implements ResultSetHandler {
                 }
             }
         }
-    }
-
-    //
-    // GET VALUE FROM ROW FOR SIMPLE RESULT MAP
-    //
-
-    private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap, String columnPrefix) throws SQLException {
-        final ResultLoaderMap lazyLoader = new ResultLoaderMap();
-        // 根据返回值对象类型调用其构造方法，该结果中所有字段未生成值
-        Object rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
-        if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
-            // 元对象
-            final MetaObject metaObject = configuration.newMetaObject(rowValue);
-            boolean foundValues = this.useConstructorMappings;
-            // 根据配置信息是否处理自动字段和列的映射
-            if (shouldApplyAutomaticMappings(resultMap, false)) {
-                // 在这里处理 result map 中没用定义的字段和列关系的映射（自动映射列名和字段名相同）
-                foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
-            }
-            // 根据 result mapping 中配置的字段和数据库列的映射关系，从 resultSet 中取值后封装给 metaObject
-            foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
-            foundValues = lazyLoader.size() > 0 || foundValues;
-            rowValue = foundValues || configuration.isReturnInstanceForEmptyRow() ? rowValue : null;
-        }
-        return rowValue;
     }
 
     //
@@ -515,7 +513,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
                 }
                 if (value != null
                         || configuration.isCallSettersOnNulls() && !metaObject.getSetterType(property).isPrimitive()) {
-                    // 反射封装值 gcode issue #377, call setter on nulls (value is not 'found')
+                    // 反射封装值
                     metaObject.setValue(property, value);
                 }
             }

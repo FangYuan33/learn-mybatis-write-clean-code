@@ -88,7 +88,9 @@ public abstract class BaseStatementHandler implements StatementHandler {
         Statement statement = null;
         try {
             statement = instantiateStatement(connection);
+            // 赋值查询超时时间
             setStatementTimeout(statement, transactionTimeout);
+            // 赋值结果集获取数量
             setFetchSize(statement);
             return statement;
         } catch (SQLException e) {
