@@ -80,6 +80,11 @@
         </where>
     </select>
 
+    <select id="selectDynamicTableName" parameterType="string" resultMap="selectAuthor">
+        select id, username, password, email, bio, favourite_section
+        from ${tableName}
+    </select>
+
     <select id="selectAllAuthors" resultType="org.apache.ibatis.domain.blog.Author">
         select * from author
     </select>

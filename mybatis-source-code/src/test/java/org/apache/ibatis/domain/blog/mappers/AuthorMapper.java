@@ -43,6 +43,8 @@ public interface AuthorMapper {
 
   Author selectAuthorDynamic(Integer id);
 
+  List<Author> selectDynamicTableName(String tableName);
+
   LinkedHashMap<String, Object> selectAuthorLinkedHashMap(int id);
 
   void selectAuthor(int id, ResultHandler handler);

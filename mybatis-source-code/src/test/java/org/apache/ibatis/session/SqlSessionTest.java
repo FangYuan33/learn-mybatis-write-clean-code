@@ -89,6 +89,16 @@ class SqlSessionTest extends BaseDataTest {
         }
     }
 
+    //    !use!
+    @Test
+    void dynamicTableName() {
+        try (SqlSession session = sqlMapper.openSession()) {
+            AuthorMapper mapper = session.getMapper(AuthorMapper.class);
+            List<Author> author = mapper.selectDynamicTableName("author");
+            assertEquals(2, author.size());
+        }
+    }
+
     @Test
     void shouldResolveBothSimpleNameAndFullyQualifiedName() {
         Configuration c = new Configuration();

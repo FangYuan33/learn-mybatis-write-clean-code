@@ -36,7 +36,7 @@ public final class MappedStatement {
     // 每个 MappedStatement 对象都有一个唯一的 ID，用于在 MyBatis 配置中标识和引用该语句（Mapper接口中的方法的全路径名称）
     // eg: org.apache.ibatis.domain.blog.mappers.AuthorMapper.selectAuthor
     private String id;
-    // sqlSource 存储 SQL 语句，标记为静态、动态SQL
+    // sqlSource 存储 SQL 语句，区分静态、动态SQL
     private SqlSource sqlSource;
     // 描述输入参数的类型和映射关系
     private ParameterMap parameterMap;

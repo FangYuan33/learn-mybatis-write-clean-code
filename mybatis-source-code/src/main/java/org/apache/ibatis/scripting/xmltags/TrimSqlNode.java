@@ -56,6 +56,7 @@ public class TrimSqlNode implements SqlNode {
     public boolean apply(DynamicContext context) {
         FilteredDynamicContext filteredDynamicContext = new FilteredDynamicContext(context);
         boolean result = contents.apply(filteredDynamicContext);
+        // 处理前缀和后缀标识符信息
         filteredDynamicContext.applyAll();
         return result;
     }
@@ -90,7 +91,9 @@ public class TrimSqlNode implements SqlNode {
             sqlBuffer = new StringBuilder(sqlBuffer.toString().trim());
             String trimmedUppercaseSql = sqlBuffer.toString().toUpperCase(Locale.ENGLISH);
             if (trimmedUppercaseSql.length() > 0) {
+                // 处理前缀标识符比如，WHERE，SET
                 applyPrefix(sqlBuffer, trimmedUppercaseSql);
+                // 处理后缀标识符，一般用于自定义 TrimSqlNode
                 applySuffix(sqlBuffer, trimmedUppercaseSql);
             }
             delegate.appendSql(sqlBuffer.toString());
@@ -126,6 +129,7 @@ public class TrimSqlNode implements SqlNode {
                 return;
             }
             prefixApplied = true;
+            // 处理连接符 AND 或 OR ...
             if (prefixesToOverride != null) {
                 prefixesToOverride.stream().filter(trimmedUppercaseSql::startsWith).findFirst()
                         .ifPresent(toRemove -> sql.delete(0, toRemove.trim().length()));

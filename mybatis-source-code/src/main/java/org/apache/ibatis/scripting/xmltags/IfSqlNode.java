@@ -31,6 +31,7 @@ public class IfSqlNode implements SqlNode {
 
     @Override
     public boolean apply(DynamicContext context) {
+        // 判断表达式，如果 if 标签中 test 判断为 true 则将对应的 SQL 片段拼接到 SQL 上
         if (evaluator.evaluateBoolean(test, context.getBindings())) {
             contents.apply(context);
             return true;

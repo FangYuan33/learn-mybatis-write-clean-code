@@ -44,12 +44,14 @@ public class DynamicContext {
 
     public DynamicContext(Configuration configuration, Object parameterObject) {
         if (parameterObject != null && !(parameterObject instanceof Map)) {
+            // 有入参且入参非 map 类型，创建入参对应的元对象 MetaObject，并标记是否该入参有没有对应的类型处理器 TypeHandler
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             boolean existsTypeHandler = configuration.getTypeHandlerRegistry().hasTypeHandler(parameterObject.getClass());
             bindings = new ContextMap(metaObject, existsTypeHandler);
         } else {
             bindings = new ContextMap(null, false);
         }
+        // 参数以 key: _parameter value: parameterObject 记录
         bindings.put(PARAMETER_OBJECT_KEY, parameterObject);
         bindings.put(DATABASE_ID_KEY, configuration.getDatabaseId());
     }
