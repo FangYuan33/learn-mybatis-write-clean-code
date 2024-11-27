@@ -23,6 +23,7 @@ create table permissions (
 );
 
 insert into permissions values ('resource1', 'user1', 'read');
+insert into permissions values ('resource1', 'user2', 'read');
 insert into permissions values ('resource1', 'user1', 'create');
 insert into permissions values ('resource2', 'user1', 'delete');
 insert into permissions values ('resource2', 'user1', 'update');

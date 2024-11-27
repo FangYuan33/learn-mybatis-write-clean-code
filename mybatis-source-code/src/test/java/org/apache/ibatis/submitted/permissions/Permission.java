@@ -18,6 +18,7 @@ package org.apache.ibatis.submitted.permissions;
 public class Permission {
 
   private String permission;
+
   private Resource resource;
 
   public String getPermission() {

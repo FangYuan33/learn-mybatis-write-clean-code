@@ -426,21 +426,21 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         }
     }
 
-    //
-    // GET VALUE FROM ROW FOR NESTED RESULT MAP
-    //
-
+    // 在循环引用 ResultMap 中从数据库行数据中获取对应的 Java 对象
     private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap, CacheKey combinedKey, String columnPrefix,
                                Object partialObject) throws SQLException {
         final String resultMapId = resultMap.getId();
         Object rowValue = partialObject;
         if (rowValue != null) {
+            // rowValue 不为 null 时，表示数据库包含多行相同键值数据，需要处理它们的聚合关系，一对多or多对一
             final MetaObject metaObject = configuration.newMetaObject(rowValue);
-            putAncestor(rowValue, resultMapId);
+            ancestorObjects.put(resultMapId, rowValue);
+            // 处理循环引用的映射关系
             applyNestedResultMappings(rsw, resultMap, metaObject, columnPrefix, combinedKey, false);
             ancestorObjects.remove(resultMapId);
         } else {
             final ResultLoaderMap lazyLoader = new ResultLoaderMap();
+            // 创建未赋值的结果对象
             rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
             if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
                 final MetaObject metaObject = configuration.newMetaObject(rowValue);
@@ -448,8 +448,11 @@ public class DefaultResultSetHandler implements ResultSetHandler {
                 if (shouldApplyAutomaticMappings(resultMap, true)) {
                     foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
                 }
+                // 根据 result mapping 中配置的字段和数据库列的映射关系，从 resultSet 中取值后封装给 metaObject
                 foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
-                putAncestor(rowValue, resultMapId);
+                // 添加到 ancestor 缓存中，用于封装循环引用对象；ancestor 祖先，原型
+                ancestorObjects.put(resultMapId, rowValue);
+                // 处理循环引用的映射关系
                 foundValues = applyNestedResultMappings(rsw, resultMap, metaObject, columnPrefix, combinedKey, true)
                         || foundValues;
                 ancestorObjects.remove(resultMapId);
@@ -461,10 +464,6 @@ public class DefaultResultSetHandler implements ResultSetHandler {
             }
         }
         return rowValue;
-    }
-
-    private void putAncestor(Object resultObject, String resultMapId) {
-        ancestorObjects.put(resultMapId, resultObject);
     }
 
     private boolean shouldApplyAutomaticMappings(ResultMap resultMap, boolean isNested) {
@@ -1020,9 +1019,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         Object rowValue = previousRowValue;
         while (shouldProcessMoreRows(resultContext, rowBounds) && !resultSet.isClosed() && resultSet.next()) {
             final ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(resultSet, resultMap, null);
+            // 根据ID字段名和值（或其他字段名和值，不包括循环引用字段）信息创建缓存 key，这样同一个字段的同一个值就对应了一个缓存对象，避免重复创建对象
+            // 这样，在做一对多或多对一时，便能根据 key 值获取到所属对象
             final CacheKey rowKey = createRowKey(discriminatedResultMap, rsw, null);
+            // 循环引用对象缓存中获取对象；partial 部分的，如此命名表示该对象中一对多或多对一关系未被处理完成
             Object partialObject = nestedResultObjects.get(rowKey);
-            // issue #577 && #542
+
             if (mappedStatement.isResultOrdered()) {
                 if (partialObject == null && rowValue != null) {
                     nestedResultObjects.clear();
@@ -1030,6 +1032,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
                 }
                 rowValue = getRowValue(rsw, discriminatedResultMap, rowKey, null, partialObject);
             } else {
+                // 获取该行数据库对应的 Java 对象
                 rowValue = getRowValue(rsw, discriminatedResultMap, rowKey, null, partialObject);
                 if (partialObject == null) {
                     storeObject(resultHandler, resultContext, rowValue, parentMapping, resultSet);
@@ -1044,10 +1047,6 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         }
     }
 
-    //
-    // NESTED RESULT MAP (JOIN MAPPING)
-    //
-
     private boolean applyNestedResultMappings(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject,
                                               String parentPrefix, CacheKey parentRowKey, boolean newObject) {
         boolean foundValues = false;
@@ -1058,24 +1057,26 @@ public class DefaultResultSetHandler implements ResultSetHandler {
                     final String columnPrefix = getColumnPrefix(parentPrefix, resultMapping);
                     final ResultMap nestedResultMap = getNestedResultMap(rsw.getResultSet(), nestedResultMapId, columnPrefix);
                     if (resultMapping.getColumnPrefix() == null) {
-                        // try to fill circular reference only when columnPrefix
-                        // is not specified for the nested result map (issue #215)
+                        // 为未声明列前缀的 result_mapping 封装循环引用对象
                         Object ancestorObject = ancestorObjects.get(nestedResultMapId);
                         if (ancestorObject != null) {
                             if (newObject) {
-                                linkObjects(metaObject, resultMapping, ancestorObject); // issue #385
+                                linkObjects(metaObject, resultMapping, ancestorObject);
                             }
                             continue;
                         }
                     }
+                    // 同样创建缓存 KEY，并从循环应用缓存中获取已经创建但可能未完成一对多和多对一关系的对象
                     final CacheKey rowKey = createRowKey(nestedResultMap, rsw, columnPrefix);
                     final CacheKey combinedKey = combineKeys(rowKey, parentRowKey);
                     Object rowValue = nestedResultObjects.get(combinedKey);
                     boolean knownValue = rowValue != null;
-                    instantiateCollectionPropertyIfAppropriate(resultMapping, metaObject); // mandatory
+                    instantiateCollectionPropertyIfAppropriate(resultMapping, metaObject);
                     if (anyNotNullColumnHasValue(resultMapping, columnPrefix, rsw)) {
+                        // 获取该行数据
                         rowValue = getRowValue(rsw, nestedResultMap, combinedKey, columnPrefix, rowValue);
                         if (rowValue != null && !knownValue) {
+                            // 封装到结果对象中
                             linkObjects(metaObject, resultMapping, rowValue);
                             foundValues = true;
                         }
@@ -1230,10 +1231,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
     private void linkObjects(MetaObject metaObject, ResultMapping resultMapping, Object rowValue) {
         final Object collectionProperty = instantiateCollectionPropertyIfAppropriate(resultMapping, metaObject);
+        // 如果是一对多关系，则添加到对应集合中
         if (collectionProperty != null) {
             final MetaObject targetMetaObject = configuration.newMetaObject(collectionProperty);
             targetMetaObject.add(rowValue);
         } else {
+            // 否则直接为对应字段赋值
             metaObject.setValue(resultMapping.getProperty(), rowValue);
         }
     }

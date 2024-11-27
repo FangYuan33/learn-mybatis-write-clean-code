@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Resource {
+
   private String name;
-  private List<Principal> Principals = new ArrayList<>();
+
+  private List<Principal> principals = new ArrayList<>();
 
   public String getName() {
     return name;
@@ -31,10 +33,10 @@ public class Resource {
   }
 
   public List<Principal> getPrincipals() {
-    return Principals;
+    return principals;
   }
 
   public void setPrincipals(List<Principal> principals) {
-    this.Principals = principals;
+    this.principals = principals;
   }
 }

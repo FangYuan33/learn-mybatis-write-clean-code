@@ -21,6 +21,7 @@ import java.util.List;
 public class Principal {
 
   private String principalName;
+
   private List<Permission> permissions = new ArrayList<>();
 
   public String getPrincipalName() {
