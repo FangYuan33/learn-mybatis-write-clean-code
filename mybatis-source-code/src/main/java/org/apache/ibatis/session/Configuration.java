@@ -739,7 +739,7 @@ public class Configuration {
         if (cacheEnabled) {
             executor = new CachingExecutor(executor);
         }
-        // 插件相关逻辑
+        // 拦截器相关逻辑
         return (Executor) interceptorChain.pluginAll(executor);
     }
 

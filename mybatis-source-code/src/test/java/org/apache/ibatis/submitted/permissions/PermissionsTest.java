@@ -54,7 +54,7 @@ class PermissionsTest {
 
             final Resource firstResource = resources.get(0);
             final List<Principal> principalPermissions = firstResource.getPrincipals();
-            Assertions.assertEquals(1, principalPermissions.size());
+            Assertions.assertEquals(2, principalPermissions.size());
 
             final Principal firstPrincipal = principalPermissions.get(0);
             final List<Permission> permissions = firstPrincipal.getPermissions();

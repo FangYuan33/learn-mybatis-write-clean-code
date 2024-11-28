@@ -34,76 +34,87 @@ import org.junit.jupiter.api.Test;
 
 class PluginTest {
 
-  private static SqlSessionFactory sqlSessionFactory;
+    private static SqlSessionFactory sqlSessionFactory;
 
-  @BeforeAll
-  static void setUp() throws Exception {
-    try (Reader reader = Resources.getResourceAsReader("org/apache/ibatis/plugin/mybatis-config.xml")) {
-      sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
-    }
-    BaseDataTest.runScript(sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
-        "org/apache/ibatis/plugin/CreateDB.sql");
-  }
-
-  @Test
-  void shouldPluginSwitchSchema() {
-    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      Mapper mapper = sqlSession.getMapper(Mapper.class);
-      assertEquals("Public user 1", mapper.selectNameById(1));
+    @BeforeAll
+    static void setUp() throws Exception {
+        try (Reader reader = Resources.getResourceAsReader("org/apache/ibatis/plugin/mybatis-config.xml")) {
+            sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
+        }
+        BaseDataTest.runScript(sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
+                "org/apache/ibatis/plugin/CreateDB.sql");
     }
 
-    SchemaHolder.set("MYSCHEMA");
+    @Test
+    void shouldPluginSwitchSchema() {
+        try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+            Mapper mapper = sqlSession.getMapper(Mapper.class);
+            assertEquals("Public user 1", mapper.selectNameById(1));
+        }
 
-    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      Mapper mapper = sqlSession.getMapper(Mapper.class);
-      assertEquals("Private user 1", mapper.selectNameById(1));
+        SchemaHolder.set("MYSCHEMA");
+
+        try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+            Mapper mapper = sqlSession.getMapper(Mapper.class);
+            assertEquals("Private user 1", mapper.selectNameById(1));
+        }
     }
-  }
 
-  static class SchemaHolder {
-    private static ThreadLocal<String> value = ThreadLocal.withInitial(() -> "PUBLIC");
+    static class SchemaHolder {
+        private static ThreadLocal<String> value = ThreadLocal.withInitial(() -> "PUBLIC");
 
-    public static void set(String tenantName) {
-      value.set(tenantName);
+        public static void set(String tenantName) {
+            value.set(tenantName);
+        }
+
+        public static String get() {
+            return value.get();
+        }
     }
 
-    public static String get() {
-      return value.get();
+    @Intercepts(@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class}))
+    public static class SwitchCatalogInterceptor implements Interceptor {
+        @Override
+        public Object intercept(Invocation invocation) throws Throwable {
+            Object[] args = invocation.getArgs();
+            Connection con = (Connection) args[0];
+            con.setSchema(SchemaHolder.get());
+            return invocation.proceed();
+        }
     }
-  }
 
-  @Intercepts(@Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class, Integer.class }))
-  public static class SwitchCatalogInterceptor implements Interceptor {
-    @Override
-    public Object intercept(Invocation invocation) throws Throwable {
-      Object[] args = invocation.getArgs();
-      Connection con = (Connection) args[0];
-      con.setSchema(SchemaHolder.get());
-      return invocation.proceed();
+    @Intercepts(@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class}))
+    public static class LogInterceptor implements Interceptor {
+        @Override
+        public Object intercept(Invocation invocation) throws Throwable {
+            System.out.println("Before Process...");
+            Object res = invocation.proceed();
+            System.out.println("After Process...");
+            return res;
+        }
     }
-  }
 
-  @Test
-  void shouldPluginNotInvokeArbitraryMethod() {
-    Map<?, ?> map = new HashMap<>();
-    map = (Map<?, ?>) new AlwaysMapPlugin().plugin(map);
-    try {
-      map.get("Anything");
-      fail("Exected IllegalArgumentException, but no exception was thrown.");
-    } catch (IllegalArgumentException e) {
-      assertEquals(
-          "Method 'public abstract java.lang.Object java.util.Map.get(java.lang.Object)' is not supported as a plugin target.",
-          e.getMessage());
-    } catch (Exception e) {
-      fail("Exected IllegalArgumentException, but was " + e.getClass(), e);
+    @Test
+    void shouldPluginNotInvokeArbitraryMethod() {
+        Map<?, ?> map = new HashMap<>();
+        map = (Map<?, ?>) new AlwaysMapPlugin().plugin(map);
+        try {
+            map.get("Anything");
+            fail("Exected IllegalArgumentException, but no exception was thrown.");
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                    "Method 'public abstract java.lang.Object java.util.Map.get(java.lang.Object)' is not supported as a plugin target.",
+                    e.getMessage());
+        } catch (Exception e) {
+            fail("Exected IllegalArgumentException, but was " + e.getClass(), e);
+        }
     }
-  }
 
-  @Intercepts({ @Signature(type = Map.class, method = "get", args = { Object.class }) })
-  public static class AlwaysMapPlugin implements Interceptor {
-    @Override
-    public Object intercept(Invocation invocation) {
-      return "Always";
+    @Intercepts({@Signature(type = Map.class, method = "get", args = {Object.class})})
+    public static class AlwaysMapPlugin implements Interceptor {
+        @Override
+        public Object intercept(Invocation invocation) {
+            return "Always";
+        }
     }
-  }
 }

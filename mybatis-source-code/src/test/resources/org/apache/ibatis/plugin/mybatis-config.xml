@@ -23,8 +23,8 @@
 <configuration>
 
   <plugins>
-    <plugin
-      interceptor="org.apache.ibatis.plugin.PluginTest$SwitchCatalogInterceptor" />
+    <plugin interceptor="org.apache.ibatis.plugin.PluginTest$SwitchCatalogInterceptor" />
+    <plugin interceptor="org.apache.ibatis.plugin.PluginTest$LogInterceptor" />
   </plugins>
 
   <environments default="development">
