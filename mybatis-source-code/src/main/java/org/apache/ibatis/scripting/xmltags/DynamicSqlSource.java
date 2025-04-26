@@ -38,7 +38,7 @@ public class DynamicSqlSource implements SqlSource {
         // 创建动态 SQL 的上下文信息
         DynamicContext context = new DynamicContext(configuration, parameterObject);
         // 根据上下文信息拼接 SQL，处理 SQL 中的动态标签
-        // 处理完成后 SQL 为不包含任何动态标签，为可能包含 #{} 占位符的 SQL 信息，SQL 会被封装到上下文的 sqlBuilder 对象中
+        // 处理完成后 SQL 为不包含任何动态标签。但可能包含 #{} 占位符的 SQL 信息，SQL 会被封装到上下文的 sqlBuilder 对象中
         rootSqlNode.apply(context);
 
         // 处理拼接完成后 SQL 中的 #{} 占位符，将占位符替换为 ?

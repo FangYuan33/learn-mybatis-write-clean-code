@@ -77,15 +77,20 @@ public class PreparedStatementHandler extends BaseStatementHandler {
 
     @Override
     protected Statement instantiateStatement(Connection connection) throws SQLException {
+        // 注意：此处的 sql 即为控制台日志中常见的带有 ? 占位符的 SQL 也是要发送给 MySQL 要执行的 SQL
         String sql = boundSql.getSql();
+        // 判断是否为自增主键
         if (mappedStatement.getKeyGenerator() instanceof Jdbc3KeyGenerator) {
             String[] keyColumnNames = mappedStatement.getKeyColumns();
             if (keyColumnNames == null) {
+                // 让 JDBC 驱动程序在执行插入操作时返回自动生成的主键
                 return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             } else {
+                // 让 JDBC 驱动根据在执行插入操作时返回指定列的键值
                 return connection.prepareStatement(sql, keyColumnNames);
             }
         }
+        // 根据 ResultSetType 类型创建 PreparedStatement
         if (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) {
             return connection.prepareStatement(sql);
         } else {

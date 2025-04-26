@@ -25,6 +25,7 @@
   <plugins>
     <plugin interceptor="org.apache.ibatis.plugin.PluginTest$SwitchCatalogInterceptor" />
     <plugin interceptor="org.apache.ibatis.plugin.PluginTest$LogInterceptor" />
+    <plugin interceptor="org.apache.ibatis.plugin.PluginTest$QueryInterceptor" />
   </plugins>
 
   <environments default="development">

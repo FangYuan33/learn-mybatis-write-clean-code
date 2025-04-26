@@ -24,11 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.ibatis.BaseDataTest;
+import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.session.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -85,6 +86,19 @@ class PluginTest {
 
     @Intercepts(@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class}))
     public static class LogInterceptor implements Interceptor {
+        @Override
+        public Object intercept(Invocation invocation) throws Throwable {
+            System.out.println("Before Process...");
+            Object res = invocation.proceed();
+            System.out.println("After Process...");
+            return res;
+        }
+    }
+
+    // 非接口方法不能拦截
+    @Intercepts(@Signature(type = Executor.class, method = "doQuery",
+            args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, BoundSql.class}))
+    public static class QueryInterceptor implements Interceptor {
         @Override
         public Object intercept(Invocation invocation) throws Throwable {
             System.out.println("Before Process...");
